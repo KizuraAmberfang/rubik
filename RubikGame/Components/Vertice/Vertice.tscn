@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://Components/Piece/Piece.tscn" type="PackedScene" id=1]
 [ext_resource path="res://Resources/Red.tres" type="Material" id=2]
 [ext_resource path="res://Resources/Blu.tres" type="Material" id=3]
 [ext_resource path="res://Resources/Green.tres" type="Material" id=4]
+[ext_resource path="res://Components/Vertice/Vertice.gd" type="Script" id=5]
 
 [sub_resource type="QuadMesh" id=1]
 material = ExtResource( 4 )
@@ -11,6 +12,7 @@ size = Vector2( 2, 2 )
 center_offset = Vector3( 0, 0, 1 )
 
 [node name="Vertice" instance=ExtResource( 1 )]
+script = ExtResource( 5 )
 
 [node name="FacciaG" type="MeshInstance" parent="." index="1"]
 mesh = SubResource( 1 )

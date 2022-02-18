@@ -7,6 +7,8 @@ extents = Vector3( 20, 0.1, 20 )
 
 [sub_resource type="SpatialMaterial" id=2]
 metallic = 1.0
+metallic_specular = 1.0
+metallic_texture_channel = 3
 
 [sub_resource type="CubeMesh" id=3]
 material = SubResource( 2 )
@@ -24,10 +26,10 @@ mesh = SubResource( 3 )
 material/0 = null
 
 [node name="CameraPivot" type="Position3D" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 16.5315, 16.4617 )
+transform = Transform( 0.707107, -0.5, 0.5, 0, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 17.532, 16.462 )
 
 [node name="Camera" type="Camera" parent="CameraPivot"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.306095, 2.59877, 19.5894 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 9.306, -6.401, 4.588 )
 
 [node name="Cubo" parent="." instance=ExtResource( 1 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.56156, 0 )
@@ -37,3 +39,6 @@ right = Color( 0, 1, 0, 1 )
 left = Color( 0, 0, 1, 1 )
 back = Color( 1, 0, 0, 1 )
 down = Color( 1, 1, 0, 1 )
+
+[node name="DirectionalLight" type="DirectionalLight" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 10, 11 )

@@ -13,6 +13,15 @@ script = ExtResource( 3 )
 [node name="SpigoloOG" parent="." instance=ExtResource( 2 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0 )
 
+[node name="SpigoloGR" parent="." instance=ExtResource( 2 )]
+transform = Transform( -4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 2, 0, -4 )
+
+[node name="SpigoloGW" parent="." instance=ExtResource( 2 )]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 2, 2, -2 )
+
+[node name="SpigoloGY" parent="." instance=ExtResource( 2 )]
+transform = Transform( -4.37114e-08, -4.37114e-08, 1, -1, 1.91069e-15, -4.37114e-08, 0, -1, -4.37114e-08, 2, -2, -2 )
+
 [node name="SpigoloBO" parent="." instance=ExtResource( 2 )]
 transform = Transform( -4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -2, 0, 0 )
 
@@ -22,5 +31,35 @@ transform = Transform( -4.37114e-08, -1, 0, -4.37114e-08, 1.91069e-15, -1, 1, -4
 [node name="SpigoloWO" parent="." instance=ExtResource( 2 )]
 transform = Transform( -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 2, 0 )
 
-[node name="Vertice" parent="." instance=ExtResource( 4 )]
+[node name="VerticeWOG" parent="." instance=ExtResource( 4 )]
+transform = Transform( 1.91069e-15, 1, 4.37114e-08, 4.37114e-08, -4.37114e-08, 1, 1, 0, -4.37114e-08, 2, 2, 0 )
+
+[node name="VerticeOWB" parent="." instance=ExtResource( 4 )]
 transform = Transform( -4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -2, 2, 0 )
+
+[node name="VerticeOGY" parent="." instance=ExtResource( 4 )]
+transform = Transform( 1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 2, -2, 0 )
+
+[node name="VerticeRGY" parent="." instance=ExtResource( 4 )]
+transform = Transform( -4.37114e-08, 1, -4.37114e-08, 0, -4.37114e-08, -1, -1, -4.37114e-08, 1.91069e-15, 2, -2, -4 )
+
+[node name="VerticeWGR" parent="." instance=ExtResource( 4 )]
+transform = Transform( 1.91069e-15, 0, 1, -4.37114e-08, 1, 0, -1, -4.37114e-08, 1.91069e-15, 2, 2, -4 )
+
+[node name="VerticeOBY" parent="." instance=ExtResource( 4 )]
+transform = Transform( 0, 0, -1, -1, -4.37114e-08, 0, -4.37114e-08, 1, 0, -2, -2, 0 )
+
+[node name="CentralPieceG" parent="." instance=ExtResource( 1 )]
+transform = Transform( -4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 2, 0, -2 )
+
+[node name="CentralPieceW" parent="." instance=ExtResource( 1 )]
+transform = Transform( -4.37114e-08, -1, -4.37114e-08, 0, -4.37114e-08, 1, -1, 4.37114e-08, 1.91069e-15, 0, 2, -2 )
+
+[node name="CentralPieceB" parent="." instance=ExtResource( 1 )]
+transform = Transform( 1.91069e-15, 8.74228e-08, -1, -4.37114e-08, -1, -8.74228e-08, -1, 4.37114e-08, 1.91069e-15, -2, 0, -2 )
+
+[node name="CentralPieceR" parent="." instance=ExtResource( 1 )]
+transform = Transform( -1, 4.37114e-08, -4.37114e-08, 4.37114e-08, 1, 1.74846e-07, 4.37114e-08, 1.74846e-07, -1, 0, 1, -4 )
+
+[node name="CentralPieceY" parent="." instance=ExtResource( 1 )]
+transform = Transform( -1, 4.37114e-08, -4.37114e-08, 4.37114e-08, 1.31134e-07, -1, -4.37114e-08, -1, -1.31134e-07, 0, -2, -2 )
