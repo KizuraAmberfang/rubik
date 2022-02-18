@@ -30,6 +30,16 @@ func _ready():
 	$SpigoloGY.faceColorR = right
 	$SpigoloGR.faceColorB = back
 	$SpigoloGR.faceColorR = right
+	$SpigoloWR.faceColorB = back
+	$SpigoloWR.faceColorR = upper
+	$SpigoloWB.faceColorB = left
+	$SpigoloWB.faceColorR = upper
+	$SpigoloBR.faceColorB = left
+	$SpigoloBR.faceColorR = back
+	$SpigoloYB.faceColorR = left
+	$SpigoloYB.faceColorB = down
+	$SpigoloYR.faceColorR = back
+	$SpigoloYR.faceColorB = down
 	
 	$VerticeOWB.faceColorB = upper
 	$VerticeOWB.faceColorG = left
@@ -49,7 +59,12 @@ func _ready():
 	$VerticeWGR.faceColorB = upper
 	$VerticeWGR.faceColorG = right
 	$VerticeWGR.faceColorR = back
-	
+	$VerticeWBR.faceColorB = upper
+	$VerticeWBR.faceColorG = back
+	$VerticeWBR.faceColorR = left
+	$VerticeRBY.faceColorB = left
+	$VerticeRBY.faceColorG = back
+	$VerticeRBY.faceColorR = down
 	
 	$CentralPieceO.change()
 	$CentralPieceG.change()
@@ -65,6 +80,11 @@ func _ready():
 	$SpigoloGW.change()
 	$SpigoloGY.change()
 	$SpigoloGR.change()
+	$SpigoloWR.change()
+	$SpigoloWB.change()
+	$SpigoloBR.change()
+	$SpigoloYB.change()
+	$SpigoloYR.change()
 	
 	$VerticeOWB.change()
 	$VerticeWOG.change()
@@ -72,6 +92,8 @@ func _ready():
 	$VerticeOBY.change()
 	$VerticeRGY.change()
 	$VerticeWGR.change()
+	$VerticeWBR.change()
+	$VerticeRBY.change()
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
 #	pass

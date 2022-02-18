@@ -34,7 +34,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 9.306, -6.401, 4.588 )
 [node name="Cubo" parent="." instance=ExtResource( 1 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.56156, 0 )
 upper = Color( 1, 1, 1, 1 )
-front = Color( 1, 0.494118, 0, 1 )
+front = Color( 0.921569, 0, 1, 1 )
 right = Color( 0, 1, 0, 1 )
 left = Color( 0, 0, 1, 1 )
 back = Color( 1, 0, 0, 1 )
