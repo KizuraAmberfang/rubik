@@ -76,16 +76,32 @@ class cubepos
         // example: slot 5 and ori 2 -> 2 * 8 + 5 = 21 -> [000 10 101]
         return (ori * 8 + perm);
     }
-
-    static inline edge_ori_add(int cv1, int cv2)
+  
+    static inline int edge_ori_add(int cv1, int cv2) // ATTENTION -> I DON'T LIKE THIS
     {
         // give the orientation of cubieval (cv2) to cv1
         // example: [000 0100 1] cv1 [000 0011 0] cv2
         //          edge_ori(cv2) = 0
-        //          [000 0100 0] ^ [000 0000 0]
+        //          [000 0100 1] ^ [000 0000 0] = [000 0100 1]
         return (cv1 ^ edge_ori(cv2));
     }
 
+    static inline int corner_ori_add(int cv1, int cv2)
+    {
+        // give the orientation of cv2 to cv1
+        // example: [000 010 11] cv1 [000 011 01] cv2
+        //          [000 011 01] & [000 100 10] = [000 000 00]
+        //          [000 010 11] + [000 000 00] = [000 010 11]
+        return ((cv1 + (cv2 & 18) % 24)
+    }
+
+    static inline int corner_ori_sub(int cv1, int cv2)
+    {
+        return (cv1 + corner_ori_neg_strip[cv2]);
+    }
+
+    static void init();
+    
     // static data in lesson 12
 
     // ***  DATA RAPRESENTATION *** lesson 7
