@@ -144,6 +144,21 @@ class cubepos
         mul(b, a, r);
     }
 
+    static void skip_whitespace(const char *&p);
+    static int parse_face(const char *&p);
+    static int parse_face(char f);
+
+    static void append_face(char *&p, int f)
+    {
+        *p++ = faces[f];
+    }
+
+    static int parse_move(const char *&p);
+    static void append_move(char *&p, int mv);
+    static moveseq parse_moveseq(const char *&p);
+    static void append_moveseq(char *&p, const moveseq &seq);
+    static char *moveseq_string(const moveseq &seq);
+    
     // ***  STATIC DATA DECLARATION  ** lesson 12
 
     // this array serve the purpose of allowing changes of orientation without performi division or modulo operation.

@@ -50,6 +50,12 @@ static const unsigned char corner_change[FACES][4] = {  {0,0,0,0},
                                                         {1,2,1,2}};
 
 unsigned char cubepos::inv_move[NMOVES];
+static char static_buf[200];
+
+static const char *sing_solved = "UF UR UB UL DF DR DB DL FR FL BR BL UFR URB UBL ULF DRF DFL DLB DBR";
+static const char *const smedges[] = {"UB", "BU", "UL", "LU", "UR", "RU", "UF", "FU", "LB", "BL", "RB", "BR", "LF", "FL", "RF", "FR", "DB", "BD", "DL", "LD", "DR", "RD", "DF", "FD"};
+static const char *const smcorners[] = {"UBL", "URB", "ULF", "UFR", "DLB", "DBR",  "DFL", "DRF", "LUB", "BUR", "FUL", "RUF", "BDL", "RDB", "LDF", "FDR", "BLU", "RBU", "LFU", "FRU", "LBD", "BRD", "FLD", "RFD", "ULB", "UBR", "UFL", "URF", "DBL", "DRB", "DLF", "DFR", "LBU", "BRU", "FLU", "RFU", "BLD", "RBD", "LFD", "FRD", "BUL", "RUB", "LUF", "FUR", "LDB", "BDR", "FDL", "RDF"};
+
 // ***  LOCAL ROUTINE  *** lesson 36
 
 void cubepos::invert_into(cubepos & dst) const
@@ -253,4 +259,104 @@ void cubepos::mul(const cubepos &a, const cubepos &b, cubepos &r)
         int cc = a.e[i];
         r.e[i] = edge_ori_add(b.e[edge_perm(cc)], cc);
     }
+}
+
+void cubepos::skip_whitespace(const char *&p)
+{
+    while (*p && *p <= ' ')
+        ++p;
+}
+
+int cubepos::parse_face(const char *&p)
+{
+    int f = parse_face(*p);
+    if (f >= 0)
+        ++p;
+    return (f);
+}
+
+int cubepos::parse_face(char f)
+{
+    switch (f) {
+        case 'u':
+        case 'U':
+            return 0;
+        case 'f':
+        case 'F':
+            return 1;
+        case 'r':
+        case 'R':
+            return 2;
+        case 'd':
+        case 'D':
+            return 3;
+        case 'b':
+        case 'B':
+            return 4;
+        case 'l':
+        case 'L':
+            return 5;
+        default:
+            return -1;
+    }
+}
+
+int cubepos::parse_move(const char *&p)
+{
+    skip_whitespace(p);
+    const char *q = p;
+    int f = parse_face(q);
+    if (f < 0)
+        return (-1);
+    int t = 0;
+    switch (*q) {
+        case '1':
+        case '+':
+            t = 0;
+            break;
+        case '2':
+            t = 1;
+            break;
+        case '3':
+        case '\'':
+        case '-':
+            t = TWIST - 1;
+            break;
+        default:
+            return (-1);
+    }
+    p = q + 1;
+    return ((f * TWIST) + t);
+}
+
+void cubepos::append_move(char *&p, int mv)
+{
+    append_face(p, mv/TWIST);
+    *p++ = "123"[mv % TWIST];
+    *p = 0;
+}
+
+moveseq cubepos::parse_moveseq(const char *&p)
+{
+    moveseq r;
+    int mv;
+    while((mv = parse_move(p)) >= 0)
+        r.push_back(mv);
+    return (r);
+}
+
+void cubepos::append_moveseq(char *&p, const moveseq &seq)
+{
+    *p = 0;
+    for (unsigned int i = 0; i < seq.size(); ++i)
+        append_move(p, seq[i]);
+}
+
+char *cubepos::moveseq_string(const moveseq &seq)
+{
+    if (seq.size() > 65)
+        error("! can't print a move sequence that long");
+    char *p = static_buf;
+    append_moveseq(p, seq);
+    return (static_buf);
 }
