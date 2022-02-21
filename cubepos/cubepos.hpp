@@ -128,8 +128,21 @@ class cubepos
     {
         return inv_move[mv];
     }
+
     static moveseq invert_sequence(const moveseq &seq);
+    
     void invert_into(cubepos & dst) const;
+
+    void movepc(int mov);
+
+    // right multiplication
+    static void mul(const cubepos &a, const cubepos &b, cubepos &r);
+
+    // left multiplication
+    inline static void mulpc(const cubepos &a, const cubepos &b, cubepos &r)
+    {
+        mul(b, a, r);
+    }
 
     // ***  STATIC DATA DECLARATION  ** lesson 12
 

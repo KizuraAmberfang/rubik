@@ -2,6 +2,25 @@
 #include <iostream>
 #include <math.h>
  
+#define ROT2(cc, a, b) {unsigned char t = cc[a]; cc[a] = cc[b]; cc[b] = t;}
+#define ROT4(cc, a, b, c, d) {unsigned char t = cc[d]; cc[d] = cc[c]; cc[c] = cc[b]; cc[b] = cc[a]; cc[a] = t;}
+#define ROT22(cc, a, b, c, d) ROT2(cc,a,c) ROT2(cc,b,d)
+#define EDGE4FLIP(a, b, c, d)   \
+{                               \
+    unsigned char t = e[d];     \
+    e[d] = edge_flip(e[c]);     \
+    e[c] = edge_flip(e[b]);     \
+    e[b] = edge_flip(e[a]);     \
+    e[a] = edge_flip(t);        \
+}
+#define CORNER4FLIP(a, b, cc, d)    \
+{                                   \
+    unsigned char t = c[d];         \
+    c[d] = corner_ori_inc[c[cc]];   \
+    c[cc] = corner_ori_dec[c[b]];   \
+    c[b] = corner_ori_inc[c[a]];    \
+    c[a] = corner_ori_dec[c[t]];    \
+}
  // ***  STATIC DATA INSTANTIATION  *** lesson 13
 const cubepos identity_cube(0,0,0);
 unsigned char cubepos::corner_ori_inc[CUBIES], cubepos::corner_ori_dec[CUBIES], cubepos::corner_ori_neg_strip[CUBIES], cubepos::mod24[CUBIES * 2];
@@ -143,4 +162,95 @@ moveseq cubepos::invert_sequence(const moveseq &seq)
     for (unsigned int i = 0; i < len; ++i)
         r[len - i - 1] = invert_move(seq[i]);
     return (r);
+}
+
+void cubepos::movepc(int mov)
+{
+    switch (mov) {
+        case 0: 
+            ROT4(e, 0, 2, 3, 1);
+            ROT4(c, 0, 1, 3, 2);
+            break;
+        case 1:
+            ROT22(e, 0, 2, 3, 1);
+            ROT22(c, 0, 1, 3, 2);
+            break;
+        case 2:
+            ROT4(e, 1, 3, 2, 0);
+            ROT4(c, 2, 3, 1, 0);
+            break;
+        case 3: 
+            ROT4(e, 3, 7, 11, 6);
+            CORNER4FLIP(3, 7, 6, 2);
+            break;
+        case 4:
+            ROT22(e, 3, 7, 11, 6);
+            ROT22(c, 2, 3, 7, 6);
+            break;
+        case 5:
+            ROT4(e, 6, 11, 7, 3);
+            CORNER4FLIP(3, 2, 6, 7);
+            break;
+        case 6:
+            EDGE4FLIP(2, 5, 10, 7);
+            CORNER4FLIP(1, 5, 7, 3);
+            break;
+        case 7: 
+            ROT22(e, 2, 5, 10, 7);
+            ROT22(c, 3, 1, 5, 7);
+            break;
+        case 8: 
+            EDGE4FLIP(7, 10, 5, 2);
+            CORNER4FLIP(1, 3, 7, 5);
+            break;
+        case 9: ROT4(e, 9, 11, 10, 8);
+            ROT4(c, 4, 6, 7, 5);
+            break;
+        case 10: 
+            ROT22(e, 9, 11, 10, 8);
+            ROT22(c, 4, 6, 7, 5);
+            break;
+        case 11: 
+            ROT4(e, 8, 10, 11, 9);
+            ROT4(c, 5, 7, 6, 4);
+            break;
+        case 12: 
+            ROT4(e, 0, 4, 8, 5);
+            CORNER4FLIP(0, 4, 5, 1);
+            break;
+        case 13: 
+            ROT22(e, 0, 4, 8, 5);
+            ROT22(c, 1, 0, 4, 5);
+            break;
+        case 14: 
+            ROT4(e, 5, 8, 4, 0);
+            CORNER4FLIP(0, 1, 5, 4);
+            break;
+        case 15: 
+            EDGE4FLIP(1, 6, 9, 4);
+            CORNER4FLIP(2, 6, 4, 0);
+            break;
+        case 16: 
+            ROT22(e, 1, 6, 9, 4);
+            ROT22(c, 0, 2, 6, 4);
+            break;
+        case 17: 
+            EDGE4FLIP(4, 9, 6, 1);
+            CORNER4FLIP(2, 0, 4, 6);
+            break;
+    }
+}
+
+void cubepos::mul(const cubepos &a, const cubepos &b, cubepos &r)
+{
+    for (int i = 0; i < 8; ++i)
+    {
+        int cc = a.c[i];
+        r.c[i] = corner_ori_add(b.c[corner_perm(cc)], cc);
+    }
+    for (int i = 0; i < 12; ++i)
+    {
+        int cc = a.e[i];
+        r.e[i] = edge_ori_add(b.e[edge_perm(cc)], cc);
+    }
 }
