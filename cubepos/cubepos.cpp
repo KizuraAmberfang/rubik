@@ -56,6 +56,13 @@ static const char *sing_solved = "UF UR UB UL DF DR DB DL FR FL BR BL UFR URB UB
 static const char *const smedges[] = {"UB", "BU", "UL", "LU", "UR", "RU", "UF", "FU", "LB", "BL", "RB", "BR", "LF", "FL", "RF", "FR", "DB", "BD", "DL", "LD", "DR", "RD", "DF", "FD"};
 static const char *const smcorners[] = {"UBL", "URB", "ULF", "UFR", "DLB", "DBR",  "DFL", "DRF", "LUB", "BUR", "FUL", "RUF", "BDL", "RDB", "LDF", "FDR", "BLU", "RBU", "LFU", "FRU", "LBD", "BRD", "FLD", "RFD", "ULB", "UBR", "UFL", "URF", "DBL", "DRB", "DLF", "DFR", "LBU", "BRU", "FLU", "RFU", "BLD", "RBD", "LFD", "FRD", "BUL", "RUB", "LUF", "FUR", "LDB", "BDR", "FDL", "RDF"};
 
+const int INVALID = 99;
+static unsigned char lookup_edge_cubie[FACES * FACES];
+static unsigned char lookup_corner_cubie[FACES * FACES * FACES];
+static unsigned char sm_corner_order[8];
+static unsigned char sm_edge_order[12];
+static unsigned char sm_edge_flipped[12];
+
 // ***  LOCAL ROUTINE  *** lesson 36
 
 void cubepos::invert_into(cubepos & dst) const
@@ -359,4 +366,40 @@ char *cubepos::moveseq_string(const moveseq &seq)
     char *p = static_buf;
     append_moveseq(p, seq);
     return (static_buf);
+}
+
+static int parse_cubie(const char *&p)
+{
+    cubepos::skip_whitespace(p);
+    int v = 1;
+    int f = 0;
+    while ((f = cubepos::parse_face(p)) >= 0)
+    {
+        v = v * 6 + f;
+        if (v >= 2 * 6 * 6 * 6)
+            return (-1);
+    }
+    return (v);
+}
+
+static int parse_edge(const char *&p)
+{
+    int c = parse_cubie(p);
+    if (c < 6 * 6 || c >= 2 * 6 * 6)
+        return (-1);
+    c = lookup_edge_cubie[c - 6 * 6];
+    if (c == INVALID)
+        return (-1);
+    return (c);
+}
+
+static int parse_corner(const char *&p)
+{
+    int c = parse_cubie(p);
+    if (c < 6 * 6 * 6 || c >= 2 * 6 * 6 * 6)
+        return (-1);
+    c = lookup_corner_cubie[c - 6 * 6 * 6];
+    if (c == INVALID || c >= CUBIES)
+        return (-1);
+    return (c);
 }
