@@ -1,16 +1,36 @@
 #ifndef CUBEPOS_HPP
 #define CUBEPOS_HPP
-const int NMOVES = 18 //F F2 F' etc
-const int TWIST = 3 // number of twist a corner can have
-const int FACES = 6 // number of faces of the cube
-const int M = 48 // number of automorphism induced by rotation and reflection
-const int CUBIES = 24 // number of combination for corner and edges
+#include <cstring>
+#include <vector>
+#include <algorithm>
+#include <cstdlib>
+#include <stddef.h>
+#include <unistd.h>
+#include <sys/time.h>
+
+const int NMOVES = 18; //F F2 F' etc
+const int TWIST = 3; // number of twist a corner can have
+const int FACES = 6; // number of faces of the cube
+const int M = 48; // number of automorphism induced by rotation and reflection
+const int CUBIES = 24; // number of combination for corner and edges
 
 extern const class cubepos identity_cube; // identity of the group
+
+// *** GLOBAL UTILITY DECLARATION *** lesson 30
+typedef std::vector<int> moveseq;
 
 class cubepos 
 {
     public: 
+    // constructor
+
+    inline cubepos(const cubepos &cp = identity_cube)
+    {
+        *this = cp;
+    }
+
+    cubepos(int, int, int);
+
     // function for comparing two cube - lesson 9
     inline bool operator< (const cubepos &cp) const
     {
@@ -19,7 +39,7 @@ class cubepos
 
     inline bool operator= (const cubepos &cp) const
     {
-        return (memcmp(this, &cp, sizeof(cp)) = 0);
+        return (memcmp(this, &cp, sizeof(cp)) == 0);
     }
 
     inline bool operator!= (const cubepos &cp) const
@@ -92,7 +112,7 @@ class cubepos
         // example: [000 010 11] cv1 [000 011 01] cv2
         //          [000 011 01] & [000 100 10] = [000 000 00]
         //          [000 010 11] + [000 000 00] = [000 010 11]
-        return ((cv1 + (cv2 & 18) % 24)
+        return (mod24[cv1 + (cv2 & 18)]);
     }
 
     static inline int corner_ori_sub(int cv1, int cv2)
@@ -101,9 +121,28 @@ class cubepos
     }
 
     static void init();
-    
-    // static data in lesson 12
 
+    void move(int mov);
+
+    static int invert_move(int mv)
+    {
+        return inv_move[mv];
+    }
+    static moveseq invert_sequence(const moveseq &seq);
+    void invert_into(cubepos & dst) const;
+
+    // ***  STATIC DATA DECLARATION  ** lesson 12
+
+    // this array serve the purpose of allowing changes of orientation without performi division or modulo operation.
+    static unsigned char corner_ori_inc[CUBIES], corner_ori_dec[CUBIES], corner_ori_neg_strip[CUBIES], mod24[2 * CUBIES];
+
+    // the faces! we use U F R D B L rapresentation here
+    static char faces[FACES];
+
+    // how a move effect the cubies
+    static unsigned char edge_trans[NMOVES][CUBIES], corner_trans[NMOVES][CUBIES];
+    
+    static unsigned char inv_move[NMOVES];
     // ***  DATA RAPRESENTATION *** lesson 7
     // the 8 corner -> the 3 low bit is the slot
     
@@ -117,7 +156,7 @@ class cubepos
     // example: [xxx 00 000] -> slot 0, no twist
     //          [xxx 10 010] -> slot 2, counterclockwise twist
 
-    unsigned char c[8] // this rapresent the 8 corner
+    unsigned char c[8]; // this rapresent the 8 corner
 
     // the 12 edges -> the low bit indicates if the edge is flipped: 0 is not flipped, 1 is flipped
     // 2nd, 3rd, 4th, 5th bit is the slot of the edge
@@ -131,10 +170,9 @@ class cubepos
     // example: [xxx 00 000] -> slot 0, no flip
     //          [xxx 1001 1] -> slot 9, flip
 
-    unsigned char e[12] // the 12 edges
+    unsigned char e[12]; // the 12 edges
 };
 
-// static inizialization hack lesson 16
-
+static cubepos cubepos_initialization_hack(1,2,3);
 
 #endif
