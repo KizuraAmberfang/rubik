@@ -63,6 +63,12 @@ static unsigned char sm_corner_order[8];
 static unsigned char sm_edge_order[12];
 static unsigned char sm_edge_flipped[12];
 
+unsigned char cubepos::face_map[M][FACES], cubepos::move_map[M][NMOVES];
+unsigned char cubepos::invm[M], cubepos::mm[M][M];
+unsigned char cubepos::rot_edge[M][CUBIES], cubepos::rot_corner[M][CUBIES];
+
+static const char *const axis_permute_map[] = {"UFR", "URF", "FRU", "FUR", "RUF", "RFU"};
+static const char *const axis_negate_map[] = {"UFR", "UFL", "UBL", "UBR", "DBR", "DBL", "DFL", "DFR"};
 // ***  LOCAL ROUTINE  *** lesson 36
 
 void cubepos::invert_into(cubepos & dst) const
@@ -149,6 +155,53 @@ void cubepos::invert_into(cubepos & dst) const
     }
     for (int i = 0; i < 8; ++i)
         sm_corner_order[i] = corner_perm(parse_corner(p));
+    unsigned char face_to_m[FACES * FACES * FACES];
+    for (int i = 0; i < 6; ++i)
+        parse_corner_to_facemap(axis_permute_map[i], face_map[8 * i]);
+    for (int i = 0; i < 8; ++i)
+        parse_corner_to_facemap(axis_negate_map[i], face_map[i]);
+    for (int i = 0; i < 6; ++i)
+        for (int j = 0; j < 8; j++)
+            face_map_multiply(face_map[8 * i], face_map[j], face_map[8 * i + j]);
+    for (int i = 0; i < M; ++i)
+    {
+        int v = face_map[i][0] * 36 + face_map[i][1] * 6 + face_map[i][2];
+        face_to_m[v] = i;
+    }
+    unsigned char tfaces[6];
+    for (int i = 0; i < M; ++i)
+        for (int j = 0; j < M; ++j)
+        {
+            face_map_multiply(face_map[i], face_map[j], tfaces);
+            int v = tfaces[0] * 36 + tfaces[1] * 6 + tfaces[2];
+            mm[i][j] = face_to_m[v];
+            if (mm[i][j] == 0)
+                invm[i] = j;
+        }
+    for (int m = 0; m < M; ++m)
+    {
+        int is_neg = m ^ (m >> 3) & 1;
+        for (int f = 0; f < 6; ++f)
+        {
+            for (int t = 0; t < TWIST; ++t)
+                if (is_neg)
+                    move_map[m][f * TWIST + t] = face_map[m][f] * TWIST + TWIST - 1 - t;
+                else
+                    move_map[m][f * TWIST + t] = face_map[m][f] * TWIST + t; 
+        }
+    }
+    for (int m = 0; m < M; ++m)
+        for (int c = 0; c < CUBIES; ++c)
+        {
+            int v = 0;
+            for (int i = 0; i < 2; ++i)
+                v = 6 * v + face_map[m][parse_face(smedges[c][i])];
+            rot_edge[m][c] = lookup_edge_cubie[v];
+            v = 0;
+            for (int i = 0; i < 3; ++i)
+                v = 6 * v + face_map[m][parse_face(smcorners[c][i])];
+            rot_corner[m][c] = mod24[lookup_corner_cubie[v]];
+        }
  }
 
  cubepos::cubepos(int, int, int)
@@ -476,4 +529,20 @@ char *cubepos::Singmaster_string() const
     }
     *p = 0;
     return (static_buf);
+}
+
+static void parse_corner_to_facemap(const char *p, unsigned char *a)
+{
+    for (int i = 0; i < 3; ++i)
+    {
+        int f = cubepos::parse_face(p[i]);
+        a[i] = f;
+        a[i + 3] = (f + 3) % FACES;
+    }
+}
+
+static void face_map_multiply(unsigned char *a, unsigned char *b, unsigned char *c)
+{
+    for (int i = 0; i < 6; ++i)
+        c[i] = b[a[i]];
 }
