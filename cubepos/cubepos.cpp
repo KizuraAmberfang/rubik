@@ -131,6 +131,24 @@ void cubepos::invert_into(cubepos & dst) const
         }
     for (int i = 0; i < NMOVES; ++i)
         inv_move[i] = TWIST * (i / TWIST) + (NMOVES - i - 1) % TWIST;
+    memset(lookup_edge_cubie, INVALID, sizeof(lookup_edge_cubie));
+    memset(lookup_corner_cubie, INVALID, sizeof(lookup_corner_cubie));
+    for (int i = 0; i < CUBIES; ++i)
+    {
+        const char *tmp = 0;
+        lookup_corner_cubie[parse_cubie(tmp = smcorners[i]) - 6 * 6 * 6] = i;
+        lookup_corner_cubie[parse_cubie(tmp = smcorners[CUBIES + i]) - 6 * 6 * 6] = CUBIES + i;
+        lookup_edge_cubie[parse_cubie(tmp = smedges[i]) - 6 * 6] = i;
+    }
+    const char *p = sing_solved;
+    for (int i = 0; i < 12; ++i)
+    {
+        int cv = parse_edge(p);
+        sm_edge_order[i] = edge_perm(cv);
+        sm_edge_flipped[i] = edge_ori(cv);
+    }
+    for (int i = 0; i < 8; ++i)
+        sm_corner_order[i] = corner_perm(parse_corner(p));
  }
 
  cubepos::cubepos(int, int, int)
@@ -402,4 +420,60 @@ static int parse_corner(const char *&p)
     if (c == INVALID || c >= CUBIES)
         return (-1);
     return (c);
+}
+
+const char *cubepos::parse_Singmaster(const char *p)
+{
+    if (strncmp(p, "SING ", 5) == 0)
+        p += 5;
+    int m = 0;
+    for (int i = 0; i < 12; ++i)
+    {
+        int c = parse_edge(p) ^ sm_edge_flipped[i];
+        if (c < 0)
+            return ("No such edge");
+        e[edge_perm(c)] = edge_val(sm_edge_order[i], edge_ori(c));
+        m |= 1 << i;
+    }
+    for (int i = 0; i < 8; ++i)
+    {
+        int cval = parse_corner(p);
+        if (cval < 0)
+            return ("No such corner");
+        c[corner_perm(cval)] = corner_ori_sub(sm_corner_order[i], cval);
+        m |= 1 << (i + 12);
+    }
+    skip_whitespace(p);
+    if (*p)
+        return ("Extra stuff after Singmaster representation");
+    if (m != ((1 << 20) - 1))
+        return ("Missing at least one cubie");
+    return (0);
+}
+
+char *cubepos::Singmaster_string() const
+{
+    cubepos cp;
+    invert_into(cp);
+    char *p = static_buf;
+    for (int i = 0; i < 12; ++i)
+    {
+        if (i != 0)
+            *p++ = ' ';
+        int j = sm_edge_order[i];
+        const char *q = smedges[cp.e[j] ^ sm_edge_flipped[i]];
+        *p++ = *q++;
+        *p++ = *q++;
+    }
+    for (int i = 0; i < 8; ++i)
+    {
+        *p++ = ' ';
+        int j = sm_corner_order[i];
+        const char *q = smcorners[cp.c[j]];
+        *p++ = *q++;
+        *p++ = *q++;
+        *p++ = *q++;
+    }
+    *p = 0;
+    return (static_buf);
 }

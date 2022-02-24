@@ -159,6 +159,9 @@ class cubepos
     static void append_moveseq(char *&p, const moveseq &seq);
     static char *moveseq_string(const moveseq &seq);
     
+    const char *parse_Singmaster(const char *p);
+    char *Singmaster_string() const;
+    
     // ***  STATIC DATA DECLARATION  ** lesson 12
 
     // this array serve the purpose of allowing changes of orientation without performi division or modulo operation.
