@@ -55,7 +55,7 @@ class cubepos
         return (memcmp(this, &cp, sizeof(cp)) < 0);
     }
 
-    inline bool operator= (const cubepos &cp) const
+    inline bool operator== (const cubepos &cp) const
     {
         return (memcmp(this, &cp, sizeof(cp)) == 0);
     }
