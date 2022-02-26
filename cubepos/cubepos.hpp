@@ -18,6 +18,24 @@ extern const class cubepos identity_cube; // identity of the group
 
 // *** GLOBAL UTILITY DECLARATION *** lesson 30
 typedef std::vector<int> moveseq;
+// constant to move mask *** lesson 64
+const int ALLMOVEMASK = (1 << NMOVES) - 1;
+const int ALLMOVEMASK_EXT = (1 << NMOVES) - 1;
+// constant to be efficient int the move sequence we explore
+const int CANONSEQSTATES = FACES + 1;
+const int CANONSEQSTART = 0;
+//generic utility routine *** lesson 75
+void error (const char *s);
+inline double myrand()
+{
+    return drand48();
+}
+inline int random_move()
+{
+    return (int)(NMOVES * myrand());
+}
+double waltime();
+double duration();
 
 class cubepos 
 {
@@ -161,7 +179,34 @@ class cubepos
     
     const char *parse_Singmaster(const char *p);
     char *Singmaster_string() const;
+
+    // declaration of function to remap a position according with mpm' *** lesson 63
+    void remap_into(int m, cubepos & dst) const;
+    void canon_into48(cubepos & dst) const;
+    void canon_into48_aux(cubepos & dst) const;
+    void canon_into96(cubepos & dst) const;
+
+    // we need a random cubie *** lesson 67
+
+    void randomize();
+
+    // utility routine *** lesson 74
+
+    static inline int next_cs(int cs, int mv)
+    {
+        return canon_seq[cs][mv];
+    }
+
+    static inline int cs_mask(int cs)
+    {
+        return canon_seq_mask[cs];
+    }
     
+    static inline int cs_mask_ext(int cs)
+    {
+        return canon_seq_mask_ext[cs];
+    }
+
     // ***  STATIC DATA DECLARATION  ** lesson 12
 
     // this array serve the purpose of allowing changes of orientation without performi division or modulo operation.
@@ -174,6 +219,18 @@ class cubepos
     static unsigned char edge_trans[NMOVES][CUBIES], corner_trans[NMOVES][CUBIES];
     
     static unsigned char inv_move[NMOVES];
+
+    static unsigned char face_map[M][FACES], move_map[M][NMOVES];
+
+    static unsigned char invm[M], mm[M][M];
+
+    static unsigned char rot_edge[M][CUBIES], rot_corner[M][CUBIES];
+
+    // array to give next state and bit mask ** lesson 71
+    static unsigned char canon_seq[CANONSEQSTATES][NMOVES];
+    static int canon_seq_mask[CANONSEQSTATES];
+    static int canon_seq_mask_ext[CANONSEQSTATES];
+
     // ***  DATA RAPRESENTATION *** lesson 7
     // the 8 corner -> the 3 low bit is the slot
     

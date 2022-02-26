@@ -69,7 +69,64 @@ unsigned char cubepos::rot_edge[M][CUBIES], cubepos::rot_corner[M][CUBIES];
 
 static const char *const axis_permute_map[] = {"UFR", "URF", "FRU", "FUR", "RUF", "RFU"};
 static const char *const axis_negate_map[] = {"UFR", "UFL", "UBL", "UBR", "DBR", "DBL", "DFL", "DFR"};
+
+unsigned char cubepos::canon_seq[CANONSEQSTATES][NMOVES];
+int cubepos::canon_seq_mask[CANONSEQSTATES];
+int cubepos::canon_seq_mask_ext[CANONSEQSTATES];
+
 // ***  LOCAL ROUTINE  *** lesson 36
+
+static int parse_cubie(const char *&p)
+{
+    cubepos::skip_whitespace(p);
+    int v = 1;
+    int f = 0;
+    while ((f = cubepos::parse_face(p)) >= 0)
+    {
+        v = v * 6 + f;
+        if (v >= 2 * 6 * 6 * 6)
+            return (-1);
+    }
+    return (v);
+}
+
+static int parse_edge(const char *&p)
+{
+    int c = parse_cubie(p);
+    if (c < 6 * 6 || c >= 2 * 6 * 6)
+        return (-1);
+    c = lookup_edge_cubie[c - 6 * 6];
+    if (c == INVALID)
+        return (-1);
+    return (c);
+}
+
+static int parse_corner(const char *&p)
+{
+    int c = parse_cubie(p);
+    if (c < 6 * 6 * 6 || c >= 2 * 6 * 6 * 6)
+        return (-1);
+    c = lookup_corner_cubie[c - 6 * 6 * 6];
+    if (c == INVALID || c >= CUBIES)
+        return (-1);
+    return (c);
+}
+
+static void parse_corner_to_facemap(const char *p, unsigned char *a)
+{
+    for (int i = 0; i < 3; ++i)
+    {
+        int f = cubepos::parse_face(p[i]);
+        a[i] = f;
+        a[i + 3] = (f + 3) % FACES;
+    }
+}
+
+static void face_map_multiply(unsigned char *a, unsigned char *b, unsigned char *c)
+{
+    for (int i = 0; i < 6; ++i)
+        c[i] = b[a[i]];
+}
 
 void cubepos::invert_into(cubepos & dst) const
 {
@@ -190,6 +247,7 @@ void cubepos::invert_into(cubepos & dst) const
                     move_map[m][f * TWIST + t] = face_map[m][f] * TWIST + t; 
         }
     }
+    // for each cubie we remap the faces, and then we lookup the result *** lesson 62
     for (int m = 0; m < M; ++m)
         for (int c = 0; c < CUBIES; ++c)
         {
@@ -202,6 +260,25 @@ void cubepos::invert_into(cubepos & dst) const
                 v = 6 * v + face_map[m][parse_face(smcorners[c][i])];
             rot_corner[m][c] = mod24[lookup_corner_cubie[v]];
         }
+    // lesson 73
+    for (int s = 0; s < CANONSEQSTATES; ++s)
+    {
+        int prevface = (s - 1) % FACES;
+        canon_seq_mask[s] = (1 << NMOVES) - 1;
+        for (int mv = 0; mv < NMOVES; ++mv)
+        {
+            int f = mv / TWIST;
+            int isplus = 0;
+            if (s != 0 && (prevface == f || prevface == (f + 3)))
+            {
+                canon_seq[s][mv] = INVALID;
+                canon_seq_mask[s] &= ~(1 << mv );
+            }
+            else
+                canon_seq[s][mv] = f + 1 + FACES * isplus;
+        }
+        canon_seq_mask_ext[s] = canon_seq_mask[s];
+    }
  }
 
  cubepos::cubepos(int, int, int)
@@ -439,41 +516,6 @@ char *cubepos::moveseq_string(const moveseq &seq)
     return (static_buf);
 }
 
-static int parse_cubie(const char *&p)
-{
-    cubepos::skip_whitespace(p);
-    int v = 1;
-    int f = 0;
-    while ((f = cubepos::parse_face(p)) >= 0)
-    {
-        v = v * 6 + f;
-        if (v >= 2 * 6 * 6 * 6)
-            return (-1);
-    }
-    return (v);
-}
-
-static int parse_edge(const char *&p)
-{
-    int c = parse_cubie(p);
-    if (c < 6 * 6 || c >= 2 * 6 * 6)
-        return (-1);
-    c = lookup_edge_cubie[c - 6 * 6];
-    if (c == INVALID)
-        return (-1);
-    return (c);
-}
-
-static int parse_corner(const char *&p)
-{
-    int c = parse_cubie(p);
-    if (c < 6 * 6 * 6 || c >= 2 * 6 * 6 * 6)
-        return (-1);
-    c = lookup_corner_cubie[c - 6 * 6 * 6];
-    if (c == INVALID || c >= CUBIES)
-        return (-1);
-    return (c);
-}
 
 const char *cubepos::parse_Singmaster(const char *p)
 {
@@ -531,18 +573,144 @@ char *cubepos::Singmaster_string() const
     return (static_buf);
 }
 
-static void parse_corner_to_facemap(const char *p, unsigned char *a)
+// lesson 65
+void cubepos::remap_into(int m, cubepos & dst) const
 {
-    for (int i = 0; i < 3; ++i)
+    int mprime = invm[m];
+    for (int i = 0; i < 8; ++i)
     {
-        int f = cubepos::parse_face(p[i]);
-        a[i] = f;
-        a[i + 3] = (f + 3) % FACES;
+        int c1 = rot_corner[mprime][i];
+        int c2 = corner_ori_add(c[corner_perm(c1)], c1);
+        dst.c[i] = rot_corner[m][c2];
+    }
+    for (int i = 0; i < 12; ++i)
+    {
+        int c1 = rot_corner[mprime][i * 2];
+        int c2 = edge_ori_add(e[edge_perm(c1)], c1);
+        dst.e[i] = rot_edge[m][c2];
     }
 }
 
-static void face_map_multiply(unsigned char *a, unsigned char *b, unsigned char *c)
+// lesson 66
+void cubepos::canon_into48_aux(cubepos & dst) const
 {
-    for (int i = 0; i < 6; ++i)
-        c[i] = b[a[i]];
+    for (int m = 1; m < M; ++m)
+    {
+        int mprime = invm[m];
+        int isless = 0;
+        for (int i = 0; i < 8; ++i)
+        {
+            int c1 = rot_corner[mprime][i];
+            int c2 = corner_ori_add(c[corner_perm(c1)], c1);
+            int t = rot_corner[m][c2];
+            if (isless || t < dst.c[i])
+            {
+                dst.c[i] = t;
+                isless = 1;
+            }
+            else if (t > dst.c[i])
+                goto nextm;
+        }
+        for (int i = 0; i < 12; ++i)
+        {
+            int c1 = rot_edge[mprime][i * 2];
+            int c2 = edge_ori_add(e[edge_perm(c1)], c1);
+            int t = rot_edge[m][c2];
+            if (isless || t < dst.e[i])
+            {
+                dst.e[i] = t;
+                isless = 1;
+            }
+            else if (t > dst.e[i])
+                goto nextm;
+        }
+        nextm : ;
+    }
+}
+
+void cubepos::canon_into48(cubepos & dst) const
+{
+    dst = *this;
+    canon_into48_aux(dst);
+}
+
+//implement randomize *** lesson 68
+void cubepos::randomize()
+{
+    int parity = 0;
+    for (int i = 0; i < 7; ++i)
+    {
+        int j = i + (int)((8 - i) * myrand());
+        if (j != i)
+        {
+            std::swap(c[i], c[j]);
+            ++parity;
+        }
+    }
+    for (int i = 0; i < 11; ++i)
+    {
+        int j = i + (int)((12 - i) * myrand());
+        if (j != i)
+        {
+            std::swap(e[i], e[j]);
+            ++parity;
+        }
+    }
+    if (parity & 1)
+        std::swap(e[10], e[11]);
+    int s = 24;
+    for (int i = 0; i < 7; ++i)
+    {
+        int a = (int)(3 * myrand());
+        s -= a;
+        c[i] = corner_val(corner_perm(c[i]), a);
+    }
+    c[7] = corner_val(corner_perm(c[7]), s % 3);
+    s = 0;
+    for (int i = 0; i < 11; ++i)
+    {
+        int a = (int) (2 * myrand());
+        e[i] = edge_ori_add(e[i], a);
+        s = s ^ a;
+    }
+    e[11] = e[11] ^ s;
+}
+
+// lesson 69
+
+void cubepos::canon_into96(cubepos & dst) const
+{
+    cubepos cpi;
+    invert_into(cpi);
+    if (*this < cpi)
+        dst = *this;
+    else
+        dst = cpi;
+        canon_into48_aux(dst);
+        cpi.canon_into48_aux(dst);
+}
+
+// lesson 72, implementing utility routine
+
+void error (const char *s)
+{
+    std::cerr << s << std::endl;
+    if (*s == '!')
+        exit(10);
+}
+
+static double start;
+double waltime()
+{
+    struct timeval tv;
+    gettimeofday(&tv, 0);
+    return tv.tv_sec + 0.000001 * tv.tv_usec;
+}
+
+double duration()
+{
+    double now = waltime();
+    double r = now - start;
+    start = now;
+    return r;
 }
