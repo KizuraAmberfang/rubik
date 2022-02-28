@@ -19,7 +19,7 @@
     c[d] = corner_ori_inc[c[cc]];   \
     c[cc] = corner_ori_dec[c[b]];   \
     c[b] = corner_ori_inc[c[a]];    \
-    c[a] = corner_ori_dec[c[t]];    \
+    c[a] = corner_ori_dec[t];       \
 }
  // ***  STATIC DATA INSTANTIATION  *** lesson 13
 const cubepos identity_cube(0,0,0);
@@ -166,7 +166,7 @@ void cubepos::invert_into(cubepos & dst) const
             corner_trans[m][c] = c;
         }
     for (int f = 0; f < FACES; ++f)
-        for (int t = 0; t < 3; t++)
+        for (int t = 0; t < 3; ++t)
         {
             int m = f * TWIST + t;
             int isquarter = (t == 0 || t == 2);

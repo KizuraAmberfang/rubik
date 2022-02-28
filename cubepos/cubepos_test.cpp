@@ -54,13 +54,90 @@ int main(int argc, char *argv[])
 {
     cubepos cp, cp2, cp3, cp4;
     // basic tests
-    
+    if (sizeof(int) != 4)
+        error("! this code assumes a 4-byte int throughout");
+    if (sizeof(short) != 2)
+        error("! this code assumes a 2-byte short");
+    if (sizeof(cubepos) != 20)
+        error("! size of cubepos is not 20");
+    if (lrand48() == 0)
+        srand48(getpid() + time(0));
+    for (int i = 0; i < 8; ++i)
+        if (cp.c[i] != identity_cube.c[i])
+            error("! bad initial cp");
+    for (int i = 0; i < 12; ++i)
+        if (cp.e[i] != identity_cube.e[i])
+            error("! bad initial cp");
+    for (int i = 0; i < 16; ++i)
+        if ((cubepos::face_map[i][0] % 3) != 0)
+            error("! up down not preserved in first 16");
     // move tests
-
+    std::cout << "Verifying f/b moves." << std::endl;
+    for (int i = 0; i < NMOVES; ++i)
+    {
+        cp.move(i);
+        cp.movepc(i);
+        check(cp, identity_cube, "problem veryfing fb of moves");
+    }
+    std::cout << "Verifying forward move." << std::endl;
+    for (int i = 0; i < FACES; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+            cp.move(i * TWIST);
+        check(cp, identity_cube, "problem verifying order of basic generators");
+    }
+    std::cout << "Verifying bw moves." << std::endl;
+    for (int i = 0; i < FACES; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+            cp.movepc(i * TWIST);
+        check(cp, identity_cube, "problem verifying order of basic generators 2");
+    }
     // inversion tests
-
+    std::cout << "Random cube inversion" << std::endl;
+    for (int i = 0; i < 100; ++i)
+    {
+        cp.randomize();
+        cp.invert_into(cp2);
+        cp2.invert_into(cp3);
+        check(cp, cp3, "Inversion failed");
+    }
+    std::cout << "Move inversion" << std::endl;
+    for (int i = 0; i < 100; ++i)
+    {
+        moveseq ms = random_moveseq(10);
+        moveseq msi = cubepos::invert_sequence(ms);
+        cp = identity_cube;
+        cp2 = identity_cube;
+        for (unsigned int k = 0; k < ms.size(); ++k)
+        {
+            cp.move(ms[k]);
+            cp2.move(msi[k]);
+        }
+        cp.invert_into(cp3);
+        check(cp2, cp3, "Invert move sequence failed");
+    }
     // multiplication tests
-
+    std::cout << "Multiplication" << std::endl;
+    for (int i = 0; i < 100; ++i)
+    {
+        moveseq ms = random_moveseq(10), ms2 = random_moveseq(10);
+        cp = identity_cube;
+        cp2 = identity_cube;
+        cp3 = identity_cube;
+        for (unsigned int k = 0; k < ms.size(); ++k)
+        {
+            cp.move(ms[k]);
+            cp3.move(ms[k]);
+        }
+        for (unsigned int k = 0; k < ms2.size(); ++k)
+        {
+            cp2.move(ms2[k]);
+            cp3.move(ms2[k]);
+        }
+        cubepos::mul(cp, cp2, cp4);
+        check(cp4, cp3, "Bad product");
+    }
     // move parsing tests
 
     // singmaster tests
