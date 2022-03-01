@@ -115,7 +115,7 @@ class cubepos
         return (ori * 8 + perm);
     }
   
-    static inline int edge_ori_add(int cv1, int cv2) // ATTENTION -> I DON'T LIKE THIS
+    static inline int edge_ori_add(int cv1, int cv2)
     {
         // give the orientation of cubieval (cv2) to cv1
         // example: [000 0100 1] cv1 [000 0011 0] cv2
@@ -127,10 +127,10 @@ class cubepos
     static inline int corner_ori_add(int cv1, int cv2)
     {
         // give the orientation of cv2 to cv1
-        // example: [000 010 11] cv1 [000 011 01] cv2
-        //          [000 011 01] & [000 100 10] = [000 000 00]
-        //          [000 010 11] + [000 000 00] = [000 010 11]
-        return (mod24[cv1 + (cv2 & 18)]);
+        // example: [000 01 011] cv1 [000 10 101] cv2
+        //          [000 10 011] & [000 11 000] = [000 10 000]
+        //          [000 01 011] + [000 10 000] = [000 11 011] = 1 + 2 + 8 + 16 = 26 -> 3
+        return (mod24[cv1 + (cv2 & 24)]);
     }
 
     static inline int corner_ori_sub(int cv1, int cv2)
@@ -219,11 +219,9 @@ class cubepos
     static unsigned char edge_trans[NMOVES][CUBIES], corner_trans[NMOVES][CUBIES];
     
     static unsigned char inv_move[NMOVES];
-
+	// lesson 55
     static unsigned char face_map[M][FACES], move_map[M][NMOVES];
-
     static unsigned char invm[M], mm[M][M];
-
     static unsigned char rot_edge[M][CUBIES], rot_corner[M][CUBIES];
 
     // array to give next state and bit mask ** lesson 71

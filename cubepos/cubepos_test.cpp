@@ -15,8 +15,10 @@ void check(const cubepos & cp1, const cubepos & cp2, const char *msg)
 {
     if (cp1 == cp2)
         return;
+	std::cout << std::endl << "Corners" << std::endl << std::endl;
     for (int i = 0; i < 8; ++i)
         std::cout << " " << (int)(cp1.c[i]) << " " << (int)(cp2.c[i]) << std::endl;
+	std::cout << std::endl << "Edges" << std::endl << std::endl;
     for (int i = 0; i < 12; ++i)
         std::cout << " " << (int)(cp1.e[i]) << " " << (int)(cp2.e[i]) << std::endl;
     std::cout << std::endl << msg << std::endl;
@@ -137,13 +139,66 @@ int main(int argc, char *argv[])
         }
         cubepos::mul(cp, cp2, cp4);
         check(cp4, cp3, "Bad product");
+		cp = identity_cube;
+		cp2 = identity_cube;
+		cp3 = identity_cube;
+		for (unsigned int k = 0; k < ms.size(); ++k)
+		{
+			cp.movepc(ms[k]);
+			cp3.movepc(ms[k]);
+		}
+		for (unsigned int k = 0; k < ms2.size(); ++k)
+		{
+			cp2.movepc(ms2[k]);
+			cp3.movepc(ms2[k]);
+		}
+		cubepos::mulpc(cp, cp2, cp4);
+		check(cp4, cp3, "Bad product");
     }
     // move parsing tests
-
+	std::cout << "Test parse move" << std::endl;
+	for (int i = 0; i < 100; ++i)
+	{
+		moveseq ms = random_moveseq(10);
+		char movebuf[1000];
+		char *p = movebuf;
+		for (unsigned int j = 0; j < ms.size(); ++j)
+			cubepos::append_move(p, ms[j]);
+		const char *pp = movebuf;
+		moveseq ms2 = cubepos::parse_moveseq(pp);
+		if (ms != ms2)
+			error("! bad parse");
+	}
     // singmaster tests
-
+	std::cout << "Testing Singmaster" << std::endl;
+	for (int i = 0; i < 100; ++i)
+	{
+		char singbuf[1000];
+		cp.randomize();
+		strcpy(singbuf, cp.Singmaster_string());
+		const char *err = cp2.parse_Singmaster(singbuf);
+		if (err)
+			error(err);
+		check(cp, cp2, "! mismatch between parse and gen");
+	}
     // symmetry tests
-
+	std::cout << "Testing remap" << std::endl;
+	for (int i = 0; i < 100; ++i)
+	{
+		moveseq ms;
+		int m = (int)(M * myrand());
+		for (int j = 0; j < 1; ++j)
+			ms.push_back(random_move());
+		cp = identity_cube;
+		cp2 = identity_cube;
+		for (unsigned int j = 0; j < ms.size(); ++j)
+		{
+			cp.move(ms[j]);
+			cp2.move(cubepos::move_map[m][ms[j]]);
+		}
+		cp.remap_into(m, cp3);
+		check(cp2, cp3, "Move map issue");
+	}
     // breadth-first search one
 
     // breadth-first search two

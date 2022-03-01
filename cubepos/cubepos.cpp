@@ -62,11 +62,11 @@ static unsigned char lookup_corner_cubie[FACES * FACES * FACES];
 static unsigned char sm_corner_order[8];
 static unsigned char sm_edge_order[12];
 static unsigned char sm_edge_flipped[12];
-
+// lesson 56
 unsigned char cubepos::face_map[M][FACES], cubepos::move_map[M][NMOVES];
 unsigned char cubepos::invm[M], cubepos::mm[M][M];
 unsigned char cubepos::rot_edge[M][CUBIES], cubepos::rot_corner[M][CUBIES];
-
+// lesson 57
 static const char *const axis_permute_map[] = {"UFR", "URF", "FRU", "FUR", "RUF", "RFU"};
 static const char *const axis_negate_map[] = {"UFR", "UFL", "UBL", "UBR", "DBR", "DBL", "DFL", "DFR"};
 
@@ -111,7 +111,7 @@ static int parse_corner(const char *&p)
         return (-1);
     return (c);
 }
-
+// lesson 58
 static void parse_corner_to_facemap(const char *p, unsigned char *a)
 {
     for (int i = 0; i < 3; ++i)
@@ -121,7 +121,7 @@ static void parse_corner_to_facemap(const char *p, unsigned char *a)
         a[i + 3] = (f + 3) % FACES;
     }
 }
-
+// lesson  59
 static void face_map_multiply(unsigned char *a, unsigned char *b, unsigned char *c)
 {
     for (int i = 0; i < 6; ++i)
@@ -212,6 +212,7 @@ void cubepos::invert_into(cubepos & dst) const
     }
     for (int i = 0; i < 8; ++i)
         sm_corner_order[i] = corner_perm(parse_corner(p));
+	// lesson 60
     unsigned char face_to_m[FACES * FACES * FACES];
     for (int i = 0; i < 6; ++i)
         parse_corner_to_facemap(axis_permute_map[i], face_map[8 * i]);
@@ -220,6 +221,7 @@ void cubepos::invert_into(cubepos & dst) const
     for (int i = 0; i < 6; ++i)
         for (int j = 0; j < 8; j++)
             face_map_multiply(face_map[8 * i], face_map[j], face_map[8 * i + j]);
+	// lesson 61
     for (int i = 0; i < M; ++i)
     {
         int v = face_map[i][0] * 36 + face_map[i][1] * 6 + face_map[i][2];
@@ -237,7 +239,7 @@ void cubepos::invert_into(cubepos & dst) const
         }
     for (int m = 0; m < M; ++m)
     {
-        int is_neg = m ^ (m >> 3) & 1;
+        int is_neg = (m ^ (m >> 3)) & 1;
         for (int f = 0; f < 6; ++f)
         {
             for (int t = 0; t < TWIST; ++t)
