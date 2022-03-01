@@ -200,10 +200,142 @@ int main(int argc, char *argv[])
 		check(cp2, cp3, "Move map issue");
 	}
     // breadth-first search one
-
+	world.clear();
+	q.clear();
+	q.push_back(identity_cube);
+	world[identity_cube] = 0;
+	unsigned int qg = 0;
+	int prevd = -1;
+	duration();
+	while (qg < q.size())
+	{
+		int d = world[q[qg]];
+		if (d != prevd)
+		{
+			std::cout << "At lev " << d << " size " << (q.size() - qg) << std::endl;
+		#ifndef SLICE
+			if (allpos[d] != q.size() - qg)
+				error("! bad value");
+		#endif
+			if (q.size() > MAXELEMENTS)
+				break;
+			prevd = d; 
+		}
+		for (int i = 0; i < NMOVES; ++i)
+		{
+			cp = q[qg];
+			cp.move(i);
+			if (world.find(cp) == world.end())
+			{
+				world[cp] = d + 1;
+				q.push_back(cp);
+			}
+		}
+		++qg;
+	}
+	std::cout << "Took " << duration() << std::endl;
     // breadth-first search two
-
+	world.clear();
+	q.clear();
+	q.push_back(identity_cube);
+	world[identity_cube] = 0;
+	qg = 0;
+	prevd = -1;
+	while (qg < q.size())
+	{
+		int d = world[q[qg]];
+		if (d != prevd)
+		{
+			std::cout << "At level " << d << " size " << (q.size() - qg) << std::endl;
+		#ifndef SLICE
+			if (c48pos[d] != q.size() - qg) 
+				error("! Bad value");
+		#endif
+			if (q.size() > MAXELEMENTS)
+				break;
+			prevd = d;
+		}
+		for (int i = 0; i < NMOVES; ++i)
+		{
+			cp = q[qg];
+			cp.move(i);
+			cp.canon_into48(cp2);
+			if (world.find(cp2) == world.end())
+			{
+				world[cp2] = d + 1;
+				q.push_back(cp2);
+			}
+		}
+		++qg;
+	}
+	std::cout << "Took " << duration( ) << std::endl ;
     // breadth-first search three
-
+	world .clear ( );
+	q.clear ( );
+	q.push_back(identity_cube );
+	world[identity_cube] = 0;
+	qg = 0;
+	prevd = -1;
+	while (qg < q.size ( )) 
+	{
+		int d = world [q[qg ]];
+		if (d != prevd ) 
+		{
+			std::cout << "At lev " << d << " size " << (q.size() - qg) << std::endl;
+		#ifndef SLICE
+			if (c96pos[d] != q.size() -  qg)
+			error("! bad value");
+		#endif
+			if (q.size() > MAXELEMENTS) 
+				break;
+			prevd = d;
+		}
+		for (int i = 0; i < NMOVES; i++) 
+		{
+			cp = q[qg];
+			cp.move (i);
+			cp.canon_into96(cp2);
+			if (world.find(cp2) == world.end())
+			{
+				world[cp2] = d + 1;
+				q.push_back (cp2);
+			}
+			cp = q[qg];
+			cp.movepc(i);
+			cp.canon_into96(cp2);
+			if (world.find(cp2) == world.end())
+			{
+				world[cp2] = d + 1;
+				q.push_back(cp2);
+			}
+		}
+	++qg;
+	}
+	std::cout << "Took " << duration() << std::endl ;
     // depth-first search one
+	world.clear();
+	unsigned int prevcount = 0;
+	for (int d = 0; ; ++d)
+	{
+		q.clear();
+		double t1 = waltime();
+		recur1(identity_cube, d, CANONSEQSTART, q);
+		double t2 = waltime();
+		sort(q.begin(), q.end());
+		double t3 = waltime();
+		std::vector<cubepos>::iterator nend = unique(q.begin(), q.end());
+		double t4 = waltime();
+		unsigned int sz = nend - q.begin();
+		std::cout << "Sequences " << q.size() << " positions " << sz << std::endl;
+		std::cout << "At lev " << d << " size " << (sz - prevcount) << std::endl;
+		std::cout << "Search " << (t2 - t1) << " sort " << (t3 - t2 ) << " uniq " << (t4 - t3) << std::endl;
+	#ifndef SLICE
+		if (allpos[d] != sz - prevcount)
+			error ("! bad value");
+	#endif
+	prevcount = sz;
+	if (sz > 3000000) 
+		break;
+	}
+	std::cout << "Took " << duration() << std::endl;
 }

@@ -587,7 +587,7 @@ void cubepos::remap_into(int m, cubepos & dst) const
     }
     for (int i = 0; i < 12; ++i)
     {
-        int c1 = rot_corner[mprime][i * 2];
+        int c1 = rot_edge[mprime][i * 2];
         int c2 = edge_ori_add(e[edge_perm(c1)], c1);
         dst.e[i] = rot_edge[m][c2];
     }
