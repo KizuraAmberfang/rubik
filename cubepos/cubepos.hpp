@@ -130,7 +130,7 @@ class cubepos
         // example: [000 01 011] cv1 [000 10 101] cv2
         //          [000 10 011] & [000 11 000] = [000 10 000]
         //          [000 01 011] + [000 10 000] = [000 11 011] = 1 + 2 + 8 + 16 = 26 -> 3
-        return (mod24[cv1 + (cv2 & 24)]);
+        return (mod24[cv1 + (cv2 & 0x18)]);
     }
 
     static inline int corner_ori_sub(int cv1, int cv2)

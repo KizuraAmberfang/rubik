@@ -4,3 +4,7 @@ all:
 cube:
 	g++ cubepos/*.cpp -o cubepos_test
 	./cubepos_test
+
+koc:
+	g++ kocsymm/*.cpp -o kocsymm_test
+	./kocsymm_test
