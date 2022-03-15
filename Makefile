@@ -6,5 +6,5 @@ cube:
 	./cubepos_test
 
 koc:
-	g++ kocsymm/*.cpp -o kocsymm_test
+	g++ kocsymm/*.cpp cubepos/cubepos.cpp -o kocsymm_test
 	./kocsymm_test

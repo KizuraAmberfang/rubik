@@ -106,7 +106,7 @@ class kocsymm
 	// *** lesson 20
 
 	static lookup_type cornesymm_expand[CORNERRSYMM];
-	static corner_mapinfo cornersymm[CORNERRSYMM];
+	static corner_mapinfo cornersymm[CORNERSYMM];
 	static lookup_type edgeomap[EDGEOSYMM][KOCSYMM];
 	static lookup_type edgepmap[EDGEPERM][KOCSYMM];
 	static lookup_type edgepxor[EDGEPERM][2];

@@ -15,7 +15,7 @@ lookup_type kocsymm::epsymm_expand[EDGEOSYMM];
 // *** lesson 21
 
 lookup_type kocsymm::cornesymm_expand[CORNERRSYMM];
-corner_mapinfo kocsymm::cornersymm[CORNERRSYMM];
+corner_mapinfo kocsymm::cornersymm[CORNERSYMM];
 lookup_type kocsymm::edgeomap[EDGEOSYMM][KOCSYMM];
 lookup_type kocsymm::edgepmap[EDGEPERM][KOCSYMM];
 lookup_type kocsymm::edgepxor[EDGEPERM][2];
@@ -174,7 +174,7 @@ void kocsymm::init()
 	}
 	// *** lesson 22
 	c = 0;
-	for (int cs = 0; cs < CORNERRSYMM; ++cs)
+	for (int cs = 0; cs < CORNERSYMM; ++cs)
 	{
 		int minval = cs;
 		int lowm = 0;
@@ -188,21 +188,24 @@ void kocsymm::init()
 			if (kc2.csymm < minval)
 			{
 				minval = kc2.csymm;
-				lowbits = 1 << m;
+				lowbits = (1 << m);
 				lowm = m;
 			}
 			else if (kc2.csymm == minval)
-				lowbits |= 1 << m;
+				lowbits |= (1 << m);
 		}
 		if (minval == cs)
 		{
 			cornesymm_expand[c] = minval;
-			cornersymm[cs].minmap = lowm;
-			cornersymm[cs].csymm = cornersymm[minval].csymm;
+			cornersymm[cs].csymm = c++;
 		}
-		if (c != CORNERRSYMM)
-			error("! bad cornersym result");
+		cornersymm[cs].minbits = lowbits;
+		cornersymm[cs].minmap = lowm;
+		cornersymm[cs].csymm = cornersymm[minval].csymm;
 	}
+	std::cout << c << " " << CORNERRSYMM << std::endl;
+	if (c != CORNERRSYMM)
+		error("! bad cornersym result");
 	// *** lesson 23
 	for (int ep = 0; ep < EDGEPERM; ++ep)
 	{
