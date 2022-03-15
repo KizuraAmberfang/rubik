@@ -8,11 +8,18 @@ lookup_type kocsymm::cornermove[CORNERSYMM][NMOVES];
 lookup_type kocsymm::edgeomove[EDGEOSYMM][NMOVES];
 lookup_type kocsymm::edgepmove[EDGEPERM][NMOVES];
 
-// lesson 12
-lookup_type epsymm_compress[1 << 12];
-lookup_type epsymm_expand[EDGEOSYMM];
+// *** lesson 12
+lookup_type kocsymm::epsymm_compress[1 << 12];
+lookup_type kocsymm::epsymm_expand[EDGEOSYMM];
 
-// lesson 21
+// *** lesson 21
+
+lookup_type kocsymm::cornesymm_expand[CORNERRSYMM];
+corner_mapinfo kocsymm::cornersymm[CORNERRSYMM];
+lookup_type kocsymm::edgeomap[EDGEOSYMM][KOCSYMM];
+lookup_type kocsymm::edgepmap[EDGEPERM][KOCSYMM];
+lookup_type kocsymm::edgepxor[EDGEPERM][2];
+
 // lesson 32
 // lesson 37
 // lesson 40
@@ -86,8 +93,42 @@ void kocsymm::set_coset(cubepos &cp)
 	}
 }
 
-// lesson 25
-// lesson 27
+// *** lesson 25
+
+void kocsymm::canon_into(kocsymm &kc) const{
+	corner_mapinfo &cm = cornersymm[csymm];
+	kc.csymm = cornesymm_expand[cm.csymm];
+	kc.eosymm = edgeomap[edgepxor[epsymm][cm.minmap >> 3] ^ eosymm][cm.minmap];
+	kc.epsymm = edgepmap[epsymm][cm.minmap];
+	for (int m = cm.minmap + 1; cm.minbits >> m; ++m)
+		if ((cm.minbits >> m) & 1)
+		{
+			int neo = edgeomap[edgepxor[epsymm][m >> 3] ^ eosymm][m];
+			if (neo > kc.eosymm)
+				continue;
+			int nep = edgepmap[epsymm][m];
+			if (neo < kc.eosymm || nep < kc.epsymm)
+			{
+				kc.eosymm = neo;
+				kc.epsymm = nep;
+			}
+		}
+}
+
+// **** lesson 27
+
+int kocsymm::calc_symm() const
+{
+	int r = 1;
+	corner_mapinfo &cm = cornersymm[csymm];
+	int teosymm = edgeomap[edgepxor[epsymm][cm.minmap >> 3] ^ eosymm][cm.minmap];
+	int tepsymm = edgepmap[epsymm][cm.minmap];
+	for (int m = cm.minmap + 1; cm.minbits >> m; ++m)
+		if (((cm.minbits >> m) & 1) && edgeomap[edgepxor[epsymm][m >> 3] ^ eosymm][m] == teosymm && edgepmap[epsymm][m] == tepsymm)
+			++r;
+	return (r);
+}
+
 // lesson 33
 // lesson 46
 // lesson 48
@@ -131,8 +172,65 @@ void kocsymm::init()
 				edgepmove[i][mv] = kc2.epsymm;
 		}
 	}
-	// lesson 22
-	// lesson 23
+	// *** lesson 22
+	c = 0;
+	for (int cs = 0; cs < CORNERRSYMM; ++cs)
+	{
+		int minval = cs;
+		int lowm = 0;
+		int lowbits = 1;
+		kocsymm kc(cs, 0, 0);
+		for (int m = 1; m < KOCSYMM; ++m)
+		{
+			kc.set_coset(cp);
+			cp.remap_into(m, cp2);
+			kocsymm kc2(cp2);
+			if (kc2.csymm < minval)
+			{
+				minval = kc2.csymm;
+				lowbits = 1 << m;
+				lowm = m;
+			}
+			else if (kc2.csymm == minval)
+				lowbits |= 1 << m;
+		}
+		if (minval == cs)
+		{
+			cornesymm_expand[c] = minval;
+			cornersymm[cs].minmap = lowm;
+			cornersymm[cs].csymm = cornersymm[minval].csymm;
+		}
+		if (c != CORNERRSYMM)
+			error("! bad cornersym result");
+	}
+	// *** lesson 23
+	for (int ep = 0; ep < EDGEPERM; ++ep)
+	{
+		kocsymm kc(0, 0, ep);
+		for (int m = 0; m < KOCSYMM; ++m)
+		{
+			kc.set_coset(cp);
+			cp.remap_into(m, cp2);
+			kocsymm kc2(cp2);
+			edgepmap[ep][m] = kc2.epsymm;
+			if (m == 8)
+			{
+				edgepxor[kc2.epsymm][0] = 0;
+				edgepxor[kc2.epsymm][1] = kc2.eosymm;
+			}
+		}
+	}
+	for (int eo = 0; eo < EDGEOSYMM; ++eo)
+	{
+		kocsymm kc(0, eo, 0);
+		for (int m = 0; m < KOCSYMM; ++m)
+		{
+			kc.set_coset(cp);
+			cp.remap_into(m, cp2);
+			kocsymm kc2(cp2);
+			edgeomap[eo][m] = kc2.eosymm;
+		}
+	}
 
 	//permcube::init();
 }

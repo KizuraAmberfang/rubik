@@ -14,7 +14,18 @@ const int CORNERSYMM = 2187;
 const int EDGEOSYMM = 2048;
 const int EDGEPERM = 495;
 
-// constant for cocsymm and permcube lesson 18
+// constant for cocsymm and permcube *** lesson 18
+
+const int KOCSYMM = 16;
+const int CORNERRSYMM = 168;
+
+// *** lesson 19
+
+struct corner_mapinfo 
+{
+	unsigned short minbits;
+	unsigned char csymm, minmap;
+};
 
 typedef unsigned short lookup_type;
 
@@ -67,9 +78,20 @@ class kocsymm
 	kocsymm(const cubepos &cp);
 	void set_coset(cubepos &cp);
 
-	// lesson 24
-	// lesson 26
-	// lesson 28
+	// *** lesson 24
+
+	void canon_into(kocsymm &kc) const;
+
+	// *** lesson 26
+
+	int calc_symm() const;
+
+	// *** lesson 28
+
+	static inline int in_Kocieba_group(int mv)
+	{
+		return (edgepmove[0][mv] == 0);
+	}
 
 	// STATIC DATA DECLARATION FOR KOCSYMM *** lesson 6
 
@@ -81,7 +103,13 @@ class kocsymm
 	static lookup_type epsymm_compress[1 << 12];
 	static lookup_type epsymm_expand[EDGEOSYMM];
 
-	// lesson 20
+	// *** lesson 20
+
+	static lookup_type cornesymm_expand[CORNERRSYMM];
+	static corner_mapinfo cornersymm[CORNERRSYMM];
+	static lookup_type edgeomap[EDGEOSYMM][KOCSYMM];
+	static lookup_type edgepmap[EDGEPERM][KOCSYMM];
+	static lookup_type edgepxor[EDGEPERM][2];
 
 	lookup_type csymm, eosymm, epsymm; 
 };
