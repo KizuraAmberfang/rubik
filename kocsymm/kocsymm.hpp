@@ -118,7 +118,36 @@ class kocsymm
 
 static kocsymm identity_kc(1);
 
-// lesson 29
-// lesson 30
+// *** lesson 29
+
+const int FACT4 = 24;
+const int C8_4 = 70;
+
+class permcube 
+{
+	public:
+
+	permcube();
+
+	// METHODS FOR PERMCUBE lesson 42
+	
+	static void init();
+
+	// STATIC DATA DECLARATION FOR PERMCUBE *** lesson 31
+
+	static unsigned char s4inv[FACT4];
+	static unsigned char s4mul[FACT4][FACT4];
+	static unsigned char s4compress[256];
+	static unsigned char s4expand[FACT4];
+
+	unsigned short et, em, eb;
+	unsigned char etp, emp, ebp;
+	unsigned char c8_4, ctp, cp;
+};
+
+// *** lesson 30
+
+static permcube identity_pc;
+
 // lesson 55
 #endif

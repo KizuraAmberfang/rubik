@@ -20,7 +20,13 @@ lookup_type kocsymm::edgeomap[EDGEOSYMM][KOCSYMM];
 lookup_type kocsymm::edgepmap[EDGEPERM][KOCSYMM];
 lookup_type kocsymm::edgepxor[EDGEPERM][2];
 
-// lesson 32
+// *** lesson 32
+
+unsigned char permcube::s4inv[FACT4];
+unsigned char permcube::s4mul[FACT4][FACT4];
+unsigned char permcube::s4compress[256];
+unsigned char permcube::s4expand[FACT4];
+
 // lesson 37
 // lesson 40
 // lesson 44
@@ -70,7 +76,7 @@ void kocsymm::set_coset(cubepos &cp)
 		s += ori;
 		c = c/3;
 	}
-	cp.c[7] = cubepos::edge_val(7, (8 * 3 - s) % 3);
+	cp.c[7] = cubepos::corner_val(7, (8 * 3 - s) % 3);
 	s = 0;
 	int nextmid = 4;
 	int nextud = 0;
@@ -130,6 +136,12 @@ int kocsymm::calc_symm() const
 }
 
 // lesson 33
+
+void permcube::init()
+{
+	// lesson 34
+}
+
 // lesson 46
 // lesson 48
 // lesson 49
@@ -203,7 +215,6 @@ void kocsymm::init()
 		cornersymm[cs].minmap = lowm;
 		cornersymm[cs].csymm = cornersymm[minval].csymm;
 	}
-	std::cout << c << " " << CORNERRSYMM << std::endl;
 	if (c != CORNERRSYMM)
 		error("! bad cornersym result");
 	// *** lesson 23
@@ -234,6 +245,5 @@ void kocsymm::init()
 			edgeomap[eo][m] = kc2.eosymm;
 		}
 	}
-
-	//permcube::init();
+	permcube::init();
 }

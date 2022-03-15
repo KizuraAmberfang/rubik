@@ -3,6 +3,5 @@
 
 int main(int argc, char *argv[])
 {
-	kocsymm kc, kc2;
-	cubepos cp, cp2;
+	return 0;
 }
