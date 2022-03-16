@@ -43,7 +43,17 @@ static int bc(int v)
 	}
 	return (r);
 }
-// lesson 35
+
+// *** lesson 35
+
+int muls4(int a, int b)
+{
+	int r = 3 & (b >> (2 * (a & 3)));
+	r += (3 & (b >> (2 * ((a >> 2) & 3)))) << 2;
+	r += (3 & (b >> (2 * ((a >> 4) & 3)))) << 4;
+	r += (3 & (b >> (2 * ((a >> 6) & 3)))) << 6;
+	return (r);
+}
 
 // METHOD BODIES *** lesson 15
 
@@ -135,11 +145,37 @@ int kocsymm::calc_symm() const
 	return (r);
 }
 
-// lesson 33
+// *** lesson 33
 
 void permcube::init()
 {
-	// lesson 34
+	// *** lesson 34
+	int cc = 0;
+	for (int a = 0; a < 4; ++a)
+		for (int b = 0; b < 4; ++b)
+			if (a != b)
+				for (int c = 0; c < 4; ++c)
+				if (a != c || b != c)
+				{
+					int d = 0 + 1 + 2 + 3 - a - b - c;
+					int coor = cc ^ ((cc >> 1) & 1);
+					int expanded = (1 << (2 * b)) + (2 << (2 * c)) + (3 << (2 * d));
+					s4compress[expanded] = coor;
+					s4expand[coor] = expanded;
+					++cc;
+				}
+	for (int i = 0; i < FACT4; ++i)
+		for (int j = 0; j < FACT4; ++j)
+		{
+			int k = s4compress[muls4(s4expand[i], s4expand[j])];
+			s4mul[j][i] = k;
+			if (k == 0)
+				s4inv[i] = j;
+		}
+	// lesson 38
+	// lesson 41
+	// lesson 53
+	// lesson 54
 }
 
 // lesson 46

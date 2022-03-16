@@ -140,6 +140,15 @@ class permcube
 	static unsigned char s4compress[256];
 	static unsigned char s4expand[FACT4];
 
+	// *** lesson 36
+
+	static unsigned char c8_4_compact[256];
+	static unsigned char c8_4_expand[C8_4];
+	static unsigned char c8_4_parity[C8_4];
+	
+	// lesson 39
+	// lesson 43
+
 	unsigned short et, em, eb;
 	unsigned char etp, emp, ebp;
 	unsigned char c8_4, ctp, cp;
