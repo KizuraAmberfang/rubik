@@ -11,8 +11,11 @@
 
 // *** lesson 2
 
+// number of corner orientation(3^7)
 const int CORNERSYMM = 2187;
+// number of edge orientation(2^11)
 const int EDGEOSYMM = 2048;
+// number of slot containing the miffle four slice cubies (12 on 4)
 const int EDGEPERM = 495;
 
 // constant for cocsymm and permcube *** lesson 18
@@ -65,7 +68,7 @@ class kocsymm
 		return (kc.csymm != csymm || kc.eosymm != eosymm || kc.epsymm != epsymm);
 	}
 
-	// *** lesson 9
+	// *** lesson 9 calcolare le nuove coordinate a seconda di una mossa e' facile
 
 	void move (int mv)
 	{
@@ -75,7 +78,7 @@ class kocsymm
 	}
 
 	// *** lesson 10
-
+	// da un cubepos a un kocsymm e viceversa
 	kocsymm(const cubepos &cp);
 	void set_coset(cubepos &cp);
 
@@ -95,13 +98,18 @@ class kocsymm
 	}
 
 	// STATIC DATA DECLARATION FOR KOCSYMM *** lesson 6
-
+	// for fast move operation
 	static lookup_type cornermove[CORNERSYMM][NMOVES];
 	static lookup_type edgeomove[EDGEOSYMM][NMOVES];
 	static lookup_type edgepmove[EDGEPERM][NMOVES];
 
 	// *** lesson 11
+	// for the epsymm we build a bitmask with 4 bits set [xxxx]
+	// the leat significant 4 bits are edge slot 4 to 7, next 4 slot 8 to 11, last four 0 to 3.
+	
+	// to compress the bits from 12 bits down to an epsymm value
 	static lookup_type epsymm_compress[1 << 12];
+	// to expand epsymm to a bitmask
 	static lookup_type epsymm_expand[EDGEOSYMM];
 
 	// *** lesson 20
@@ -112,6 +120,7 @@ class kocsymm
 	static lookup_type edgepmap[EDGEPERM][KOCSYMM];
 	static lookup_type edgepxor[EDGEPERM][2];
 
+	// rappresentano corner orientatio, edge orientation, cubie slot containing middle edge cubies
 	lookup_type csymm, eosymm, epsymm; 
 };
 
@@ -159,24 +168,6 @@ class permcube
 
 	inline bool operator!=(const permcube &pc) const
 	{
-		std::cout << et << " " << pc.et << std::endl;
-		std::cout << (et != pc.et) << std::endl;
-		std::cout << em << " " << pc.em << std::endl;
-		std::cout << (em != pc.em) << std::endl;
-		std::cout << eb << " " << pc.eb << std::endl;
-		std::cout << (eb != pc.eb) << std::endl;
-		std::cout << (int)etp << " " << (int)pc.etp << std::endl;
-		std::cout << (etp != pc.etp) << std::endl;
-		std::cout << (int)emp << " " << (int)pc.emp << std::endl;
-		std::cout << (emp != pc.emp) << std::endl;
-		std::cout << (int)ebp << " " << (int)pc.ebp << std::endl;
-		std::cout << (ebp != pc.ebp) << std::endl;
-		std::cout << (int)c8_4 << " " << (int)pc.c8_4 << std::endl;
-		std::cout << (c8_4 != pc.c8_4) << std::endl;
-		std::cout << (int)ctp << " " << (int)pc.ctp << std::endl;
-		std::cout << (ctp != pc.ctp) << std::endl;
-		std::cout << (int)cbp << " " << (int)pc.cbp << std::endl;
-		std::cout << (cbp != pc.cbp) << std::endl;
 		return (et != pc.et || em != pc.em || eb != pc.eb || etp != pc.etp || emp != pc.emp || ebp != pc.ebp || c8_4 != pc.c8_4 || ctp != pc.ctp || cbp != pc.cbp);
 	}
 

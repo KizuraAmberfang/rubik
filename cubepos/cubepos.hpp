@@ -34,6 +34,10 @@ inline int random_move()
 {
     return (int)(NMOVES * myrand());
 }
+inline int random_move_ext()
+{
+	return (int)(NMOVES * myrand());
+}
 double waltime();
 double duration();
 

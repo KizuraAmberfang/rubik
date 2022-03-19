@@ -40,6 +40,7 @@ int permcube::cperm_move[C8_4][NMOVES];
 
 // UTILITY METHODS *** lesson 13
 
+// bit counting function -> restituisce il numero di bit settati a 1
 static int bc(int v)
 {
 	int r = 0;
@@ -63,7 +64,7 @@ int muls4(int a, int b)
 }
 
 // METHOD BODIES *** lesson 15
-
+// calcolo le rotazioni per valorizzare i 3 valori del kocsymm
 kocsymm::kocsymm(const cubepos &cp)
 {
 	int c = 0, eo = 0, ep = 0;
@@ -77,11 +78,10 @@ kocsymm::kocsymm(const cubepos &cp)
 	csymm = c;
 	eosymm = eo;
 	epsymm = epsymm_compress[ep >> 3];
-
 }
 
 // *** lesson 16
-
+// setting the cubepos to be in coset. We destroy the preexisting permutation in the cubepos.
 void kocsymm::set_coset(cubepos &cp)
 {
 	int c = csymm, eo = eosymm, ep = epsymm_expand[epsymm];
@@ -260,8 +260,12 @@ void permcube::move(int mv)
 	et = t >> 5;
 	etp = s4mul[etp][t & 31];
 	t = eperm_move[em][mv];
+	em = t >> 5;
 	emp = s4mul[emp][t & 31];
 	t = eperm_move[eb][mv];
+	eb = t >> 5;
+	ebp = s4mul[ebp][t & 31];
+	t = cperm_move[c8_4][mv];
 	c8_4 = t >> 10;
 	ctp = s4mul[ctp][(t >> 5) & 31];
 	cbp = s4mul[cbp][t & 31];
@@ -278,7 +282,7 @@ void permcube::init_edge_from_cp(const cubepos &cp)
 		if (perm & 4)
 		{
 			em |= 1 << i;
-			emp = 4 * ebp + (perm & 3);
+			emp = 4 * emp + (perm & 3);
 		}
 		else if (perm & 8)
 		{
@@ -370,6 +374,7 @@ void permcube::set_corner_perm(cubepos & cp) const
 			cb_perm >>=2;
 		}
 }
+
 void permcube::set_perm(cubepos &cp) const
 {
 	set_edge_perm(cp);
@@ -394,6 +399,7 @@ void kocsymm::init()
 		return;
 	initialized = 1;
 	// *** lesson 14
+	// filling epsymm_compress e epsymm_expand
 	int c = 0;
 	for (int i = 0; i < (1 << 12); ++i)
 		if (bc(i) == 4)
