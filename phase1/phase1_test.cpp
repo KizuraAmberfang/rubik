@@ -30,7 +30,6 @@ int main(int argc, char *argv[])
 				if (dt < d2)
 					bc |= (1 << mv);
 			}
-			std::cout << nextmovemask << " " << bc << std::endl;
 			if (nextmovemask != bc)
 				error("! move mask error");
 		}

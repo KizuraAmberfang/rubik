@@ -220,7 +220,7 @@ void phase1::init(int suppress_writing)
 			int mv2 = cubepos::move_map[m][mv];
 			int f2 = mv2 / TWIST;
 			int key = 0;
-			if (mv2 % TWIST == TWIST - 1)
+			if ((mv2 % TWIST) == (TWIST - 1))
 				++key;
 			if (f2 >= 3)
 				key += 2;
@@ -246,13 +246,13 @@ void phase1::init(int suppress_writing)
 				if (key & 1)
 					bits = ((bits & 1) << 2) + (bits & 2) + (bits >> 2);
 				if (key & 2)
-					bits <<= 3 * TWIST;
-				bits <<= TWIST * (key >> 2);
+					bits <<= (3 * TWIST);
+				bits <<= (TWIST * (key >> 2));
 				nv[nyb] = bits;
 			}
 			int *a = map_phase1[slack][key];
 			for (int byte = 0; byte < 256; ++byte)
-				a[byte] = nv[byte & 15] | (((nv[byte >> 4] << (3 * TWIST)) | (nv[byte >> 4] >> (3 * TWIST))) & 0x777777);
+				a[byte] = nv[byte & 15] | (((nv[byte >> 4] << (3 * TWIST)) | (nv[byte >> 4] >> (3 * TWIST))) & 0x3ffff);
 		}
 	}
 }
