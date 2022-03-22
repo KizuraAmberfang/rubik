@@ -12,3 +12,7 @@ koc:
 ph1:
 	g++ phase1/*.cpp kocsymm/kocsymm.cpp cubepos/cubepos.cpp -o phase1_test
 	./phase1_test
+
+ph2:
+	g++ phase2/*.cpp kocsymm/kocsymm.cpp cubepos/cubepos.cpp -o phase2_test
+	./phase2_test
