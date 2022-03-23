@@ -12,9 +12,13 @@ int verbose = 1;
 int numthreads = 1;
 const int MAX_THREADS = 32;
 
-// lesson 4
+// *** lesson 4
+int target_lenght = 0;
+long long phase2limit = (long long)0xffffffffffffff;
+long long phase2total = (long long)0;
 
-// lesson 7
+// *** lesson 7
+int skipwrite = 0;
 
 // lesson 15
 
@@ -22,7 +26,17 @@ const int MAX_THREADS = 32;
 
 // lesson 28
 
-// UTILITY FUNCTION lesson 10
+// UTILITY FUNCTION *** lesson 10
+const int MAX_MOVES = 32;
+// lesson 17
+
+// lesson 22
+
+// lesson 27
+
+// lesson 29
+
+// lesson 32
 
 // SOLVER CLASS lesson 11
 
@@ -51,12 +65,39 @@ int main(int argc, char *argv[])
 				--argc;
 				++argv;
 				break;
-			// more argument lesson 5
+			// more argument *** lesson 5
+			case 'M':
+				if (sscanf(argv[1], "%lld", &phase2limit) != 1)
+					error("! bad argument to -M");
+				--argc;
+				++argv;
+				break;
+			case 's':
+				if (sscanf(argv[1], %d, &target_lenght) != 1)
+					error("! bad argument to -s");
+				if (target_lenght >= MAX_MOVES)
+					target_lenght = MAX_MOVES - 1;
+				--argc;
+				++argv;
+				break;
+			// lesson 8
+			case 'W':
+				++skipwrite;
+				break;
+			// lesson 20
 			default:
 				error("! bad argument");
 		}
 	}
-	// INITIALIZE PROGRAM lesson 6
+	// INITIALIZE PROGRAM *** lesson 6
+	if (phase2limit >= (long long)0xffffffffffffff && target_lenght == 0 && verbose <= 1)
+		error("! must specify -M, -s or -v");
+	// lesson 9
+	if (verbose)
+		std::cout << BANNER << std::endl << std::flush;
+		phase1::init(skipwrite);
+		phase2::init(skipwrite);
+	// lesson 16
 	// HANDLE WORK lesson 34
 	// PRINT SUMMARY lessomn 30
 }
