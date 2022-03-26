@@ -59,7 +59,7 @@ int phase2::lookup(const permcube &pc)
 	int cc = corner_coordinate(pc);
 	corner_reduce &cr = corner_reduction[cc];
 	int off = cr.c * FACT8 + edgeud_remap[cr.m][edge_coordinate(pc)];
-	int r = (mem[off >> 3] >> (4 * (off & 7))) & 0xf;
+	int r = (mem[off >> 3] >> (4 * (off & 7))) & 0xf; // verifica
 	if (r == 0 && pc == identity_pc)
 		return (0);
 	else
@@ -72,7 +72,7 @@ void phase2::gen_table()
 {
 	memset(mem, 255, memsize);
 	std::cout << "Gen phase2" << std::flush;
-	mem[0] &= ~14;
+	mem[0] &= ~14; // verifica
 	int seen = 1;
 	for (int d = 0; d < 15; ++d)
 	{
@@ -112,7 +112,7 @@ void phase2::gen_table()
 									{
 										int et = permcube::c8_12[e8_4];
 										int t1 = permcube::eperm_move[et][mv];
-										int eb = kocsymm::epsymm_compress[0xf0f - kocsymm::epsymm_compress[et]];
+										int eb = kocsymm::epsymm_compress[0xf0f - kocsymm::epsymm_expand[et]];
 										int t2 = permcube::eperm_move[eb][mv] & 31;
 										int dst1 = permcube::c12_8[t1 >> 5] * 24 * 24;
 										t1 &= 31;
@@ -236,7 +236,7 @@ int phase2::solve(const permcube &pc, int togo, int canonstate, moveseq &r)
 	if (togo-- <= 0)
 		return (0);
 	permcube pc2;
-	int mask = cubepos::cs_mask(canonstate & 0x15ebd7);
+	int mask = cubepos::cs_mask(canonstate) & 0x25d2e97; // verifica
 	while (mask)
 	{
 		int ntogo = togo;
@@ -287,7 +287,7 @@ void phase2::init(int suppress_writing)
 						minbits = 1 << m;
 					}
 					else if (tc == minc)
-						minbits |= 1 << m;
+						minbits |= (1 << m);
 				}
 				corner_reduce &cr = corner_reduction[oc];
 				if (oc == minc)
@@ -328,8 +328,10 @@ void phase2::init(int suppress_writing)
 		error("! no memory in phase2");
 	// *** lesson 23
 	if (read_table() == 0)
+	{
 		gen_table();
 		file_checksum = datahash(mem, memsize, 0);
 		if (!suppress_writing)
 			write_table();
+	}
 }
