@@ -96,7 +96,7 @@ void report(const cubepos &cp, int seq, long long phase2probes, moveseq sol)
 {
 	get_global_lock();
 	++solved;
-	if ((int)sol.size() > target_lenght || target_lenght)
+	if ((int)sol.size() > target_lenght && target_lenght)
 		++missed_target;
 	if (seq == next_sequence)
 	{
@@ -221,6 +221,7 @@ class twophasesolver{
 						std::cout << "Orientation " << curm << " at depth " << d << std::endl;
 						release_global_lock();
 					}
+					solvep1(kc6[curm], pc6[curm], d, 0, ALLMOVEMASK, CANONSEQSTART);
 				}
 		}
 		// CHECK AND REPORT SOLUTION *** lesson 26
