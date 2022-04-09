@@ -50,8 +50,14 @@ const long long TARGET = FACT8 * (long long) FACT8 * (long long) FACT4 / 2;
 	unsigned char touched[FACT8];
 	int did_a_prepass;
 #endif
-// lesson 21
-// lesson 23
+// *** lesson 21
+// array to traslate a FACT4 value into a particolar offset
+unsigned char permtobit[FACT4];
+unsigned char bittoperm[FACT4];
+// *** lesson 23
+// this is for performance
+unsigned char saveb;
+unsigned char *savep;
 // lesson 29
 // lesson 32
 // lesson 35
@@ -145,7 +151,32 @@ void freepage(unsigned char *r)
 {
 	pageq.push_back(r);
 }
-// lesson 24
+// *** lesson 24
+void flushbit()
+{
+	if (savep != 0)
+	{
+		if (0 == (*savep & saveb))
+		{
+			*savep |= saveb;
+			++uniq;
+		}
+		savep = 0;
+	}
+}
+void setonebit(const permcube &pc)
+{
+	int cindex = (pc.c8_4 * FACT4 + pc.ctp) * FACT4 + pc.cbp;
+	unsigned int eindex = (((permcube::c12_8[pc.et] * FACT4) + pc.etp) * FACT4 / 2 + (pc.ebp >> 1)) * FACT4 + permtobit[pc.emp];
+	#ifdef FASTCLEAN
+		touched[cindex] = 1;
+	#endif
+		++probes;
+		flushbit();
+		savep = bitp1[cindex] + (eindex >> 3);
+		__builtin_prefetch(savep);
+		saveb = 1 << (eindex & 7);
+}
 // lesson 25
 // lesson 27
 // lesson 28
@@ -306,13 +337,19 @@ int main (int argc, char *argv[])
 	for (int i = 0; i < oargc; ++i)
 		std::cout << " " << oargv[i];
 	std::cout << std::endl;
-	// lesson 16
+	// *** lesson 16
 	// we allocate the bitmaps
 	bitp1 = (unsigned char **)calloc(FACT8, sizeof(unsigned char *));
 	bitp2 = (unsigned char **)calloc(FACT8, sizeof(unsigned char *));
 	if (bitp1 == 0 || bitp2 == 0)
 		error("! no memory");
-	// lesson 22
+	// *** lesson 22
+	// initialize in sequential order
+	for (int i = 0; i < FACT4; ++i)
+	{
+		permtobit[i] = i;
+		bittoperm[i] = i;
+	}
 	// lesson 31
 	// lesson 33
 	// lesson 34
