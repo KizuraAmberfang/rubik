@@ -2,6 +2,9 @@ all:
 	@echo "Let's solve a Rubik Cube!"
 	g++ solver/solver.cpp phase1/phase1.cpp phase2/phase2.cpp kocsymm/kocsymm.cpp cubepos/cubepos.cpp -o solve
 
+coset:
+	g++ hcoset/hcoset.cpp phase1/phase1.cpp kocsymm/kocsymm.cpp cubepos/cubepos.cpp -o coset_test
+
 cube:
 	g++ cubepos/*.cpp -o cubepos_test
 	./cubepos_test
