@@ -58,12 +58,22 @@ unsigned char bittoperm[FACT4];
 // this is for performance
 unsigned char saveb;
 unsigned char *savep;
-// lesson 29
-// lesson 32
-// lesson 35
-// lesson 39
-// lesson 43
-// lesson 44
+// *** lesson 29
+int disable_prepass = 0;
+// *** lesson 32
+const int SQMOVES = 3;
+short rearrange[2][SQMOVES][1 << 12];
+// *** lesson 35
+const int PREPASS_MOVES = 10;
+unsigned short eperm_map[FACT8 / 2][PREPASS_MOVES];
+// *** lesson 39
+#ifdef LEVELCOUNTS
+	unsigned char bc[1 << 12];
+#endif
+// *** lesson 43
+const int STRIDE = 16;
+// *** lesson 44
+#include "corner_order.hpp"
 // lesson 49
 // lesson 56
 // lesson 61
@@ -177,13 +187,195 @@ void setonebit(const permcube &pc)
 		__builtin_prefetch(savep);
 		saveb = 1 << (eindex & 7);
 }
-// lesson 25
-// lesson 27
-// lesson 28
-// lesson 37
-// lesson 41
-// lesson 42
-// lesson 45
+// *** lesson 25
+// second routine, we don't do the last 2 lookups because it's not necessary
+void slowsearch2(const kocsymm &kc, const permcube &pc, int togo, int movemask, int canon)
+{
+	if (togo == 0)
+	{
+		if (kc == identity_kc)
+			setonebit(pc);
+		return;		
+	}
+	--togo;
+	kocsymm kc2;
+	permcube pc2;
+	int newmovemask;
+	while (movemask)
+	{
+		int mv = ffs(movemask) - 1;
+		movemask &= movemask - 1;
+		kc2 = kc;
+		kc2.move(mv);
+		int nd = phase1::lookup(kc2, togo, newmovemask);
+		if (nd <= togo)
+		{
+			pc2 = pc;
+			pc2.move(mv);
+			int new_canon = cubepos::next_cs(canon, mv);
+			int movemask3 = newmovemask & cubepos::cs_mask(new_canon);
+			if (togo == 1)
+			{
+				permcube pc3;
+				while (movemask3)
+				{
+					int mv2 = ffs(movemask3) - 1;
+					movemask3 &= movemask3 - 1;
+					pc3 = pc2;
+					pc3.move(mv2);
+					setonebit(pc3);
+				}
+			}
+			else
+				slowsearch2(kc2, pc2, togo, movemask3, new_canon);
+		}
+	}
+}
+
+// *** lesson 27
+void slowsearch2(const kocsymm &kc, const permcube &pc)
+{
+	duration();
+	for (int d = phase1::lookup(repkc); d < maxsearchdepht; ++d)
+	{
+		probes = 0;
+		long long prevlev = uniq;
+		slowsearch2(kc, pc, d, ALLMOVEMASK, CANONSEQSTART);
+		flushbit();
+		long long thislev = uniq - prevlev;
+		if (verbose)
+			std::cout << "Tests at "  << d << " " << probes << " in " << duration() << " uniq " << uniq << " lev " << thislev << std::endl;
+	}
+}
+
+// *** lesson 28
+void unpack_edgecoord(permcube &pc, int e8_4, int epp1, int epp2)
+{
+	pc.et = permcube::c8_12[e8_4];
+	pc.etp = epp1;
+	pc.ebp = epp2;
+	pc.eb = kocsymm::epsymm_compress[0xf0f - kocsymm::epsymm_expand[pc.et]];
+	pc.em = 0;
+}
+
+void unpack_edgecoord(permcube &pc, int coord)
+{
+	unpack_edgecoord(pc, coord/(FACT4 * FACT4), coord / FACT4 % FACT4, coord % FACT4);
+}
+
+// *** lesson 37
+void innerloop3(unsigned char *dst, unsigned char **srcs, int base)
+{
+	dst += 3 * base;
+	unsigned char *end = dst + 12 * 24 * 3;
+	unsigned char tval = *end;
+	unsigned short *cpp = eperm_map[base];
+	for (; dst < end; dst += 3, cpp += PREPASS_MOVES)
+	{
+		int wf2 = *(int *)(srcs[3] + cpp[3]);
+		int wr2 = *(int *)(srcs[4] + cpp[4]);
+		int wb2 = *(int *)(srcs[8] + cpp[8]);
+		int wl2 = *(int *)(srcs[9] + cpp[9]);
+		*(int *)dst = (((wf2 & 0xfff) | 
+			rearrange[0][0][wr2 & 0xfff] |
+			rearrange[0][1][wb2 & 0xfff] |
+			rearrange[0][2][wl2 & 0xfff]) << 12) |
+			((wf2 >> 12) & 0xfff) | 
+			rearrange[1][0][(wr2 >> 12) & 0xfff] |
+			rearrange[0][1][(wb2 >> 12) & 0xfff] |
+			rearrange[1][2][(wl2 >> 12) & 0xfff] |
+			*(int *)(srcs[0] + cpp[0]) |
+			*(int *)(srcs[1] + cpp[1]) |
+			*(int *)(srcs[2] + cpp[2]) |
+			*(int *)(srcs[5] + cpp[5]) |
+			*(int *)(srcs[6] + cpp[6]) |
+			*(int *)(srcs[7] + cpp[7]);
+	}
+	*end = tval;
+}
+// *** lesson 38
+int countbit(unsigned int *a)
+{
+	int r = 0;
+	const unsigned int mask1 = 0x55555555;
+	const unsigned int mask2 = 0x33333333;
+	const unsigned int mask3 = 0x0f0f0f0f;
+	for (int i = 0; i < PAGESIZE; i += 24)
+	{
+		unsigned int w1 = *a++;
+		unsigned int w2 = *a++;
+		unsigned int w3 = *a++;
+		w1 = (w1 & mask1) + ((w1 >> 1) & mask1) + (w2 & mask1);
+		w2 = ((w2 >> 1) & mask1) + (w3 & mask1) + ((w3 >> 1) & mask1);
+		unsigned int s1 = (w1 & mask2) + ((w1 >> 2) & mask2) + (w2 & mask2) + ((w2 >> 2) & mask2);
+		s1 = (s1 & mask3) + ((s1 >> 4) & mask3);
+		w1 = *a++;
+		w2 = *a++;
+		w3 = *a++;
+		w1 = (w1 & mask1) + ((w1 >> 1) & mask1) + (w2 & mask1);
+		w2 = ((w2 >> 1) & mask1) + (w3 & mask1) + ((w3 >> 1) & mask1);
+		unsigned int s2 = (w1 & mask2) + ((w1 >> 2) & mask2) + (w2 & mask2) + ((w2 >> 2) & mask2);
+		s1 += (s2 & mask3) + ((s2 >> 4) & mask3);
+		r += 255 & ((s1 >> 24) + (s1 >> 16) + (s1 >> 8) + s1);
+	}
+	return (r);
+}
+// *** lesson 41
+#ifdef LEVELCOUNTS
+	int parity(int coord)
+	{
+		return (permcube::c8_4_parity[coord / (FACT4 * FACT4)] ^ (coord / 24) ^ coord) & 1;
+	}
+	int countbits2(int cperm, int *a, int &rv2)
+	{
+		int coparity = parity(cperm);
+		int r = 0, r2 = 0;
+		int ind = 0;
+		for (int e8_4 = 0; e8_4 < C8_4; ++e8_4)
+		{
+			int p2 = coparity ^ permcube::c8_4_parity[e8_4];
+			for (int epp1 = 0; epp1 < FACT4; ++epp1)
+			{
+				int off1 = (p2 ^ epp1) & 1;
+				int off2 = 1 - off1;
+				for (int epp2 = 0; epp2 < FACT4; epp2 += 2, ind += 2)
+				{
+					int w = *a;
+					int v1 = bc[(w & 0xfff)];
+					int v2 = bc[((w >> 12) & 0xfff)];
+					r += v1 + v2;
+					r2 += v1 * levmul[ind + off1] + v2 * levmul[ind + off2];
+					a = (int *)(((char *) a) + 3);
+				}
+			}
+		}
+		rv2 = r2;
+		return r;
+	}
+#endif
+// *** lesson 42
+struct elemdata {
+	unsigned char *dst;
+	unsigned char *from[PREPASS_MOVES];
+	unsigned char e84map[70];
+};
+// *** lesson 45
+void calcneighbors(int cperm, int *a)
+{
+	permcube pc, pc2;
+	pc.c8_4 = cperm / (FACT4 * FACT4);
+	pc.ctp = cperm / FACT4 % FACT4;
+	pc.cbp = cperm % FACT4;
+	for (int mv = 0; mv < NMOVES; ++mv)
+	{
+		if (!kocsymm::in_Kocieba_group(mv))
+			continue;
+		pc2 = pc;
+		pc2.move(mv);
+		*a++ = (pc2.c8_4 * FACT4 + pc2.ctp) * FACT4 + pc2.cbp;
+	}
+}
+
 // lesson 46
 // lesson 51
 // lesson 52
@@ -244,7 +436,9 @@ void docoset(int seq, const char *movestring)
 	#ifdef LEVELCOUNTS
 		uniq_ulev = 0;
 	#endif
-	// lesson 26
+	// *** lesson 26
+	if (slow == 1)
+		slowsearch2(repkc, reppc);
 	// lesson 71
 	// lesson 74
 }
@@ -323,6 +517,10 @@ int main (int argc, char *argv[])
 				++argv;
 				break;
 			// lesson 30
+			// disable prepass
+			case 'U':
+				++disable_prepass;
+				break;
 			// lesson 53
 			// lesson 67
 			// lesson 77
@@ -350,11 +548,64 @@ int main (int argc, char *argv[])
 		permtobit[i] = i;
 		bittoperm[i] = i;
 	}
-	// lesson 31
-	// lesson 33
-	// lesson 34
-	// lesson 36
-	// lesson 40
+	// *** lesson 31
+	// we set for some moves the bits
+	const int F2 = 1 + TWIST;
+	const int R2 = 1 + 2 * TWIST;
+	const int B2 = 1 + 4 * TWIST;
+	const int L2 = 1 + 5 * TWIST;
+	permcube pc;
+	for (int i = 0; i < FACT4 / 2; ++i)
+	{
+		permtobit[2 * i] = i;
+		pc.emp = 2 * i;
+		pc.move(F2);
+		permtobit[pc.emp] = 12 + i;
+	}
+	for (int i = 0; i < FACT4; ++i)
+		bittoperm[permtobit[i]] = i;
+	// *** lesson 33
+	const int mvs[] = {R2, B2, L2};
+	for (int mvi = 0; mvi < SQMOVES; ++mvi)
+		for (int p = 0; p < FACT4; ++p)
+		{
+			pc.emp = p;
+			pc.move(mvs[mvi]);
+			rearrange[p & 1][mvi][1 << (permtobit[p] % 12)] = 1 << (permtobit[pc.emp] % 12);
+		}
+	for (int p = 0; p < 2; ++p)
+		for (int mvi = 0; mvi < SQMOVES; ++mvi)
+			for (int i = 1; i < (1 << 12); ++i)
+			{
+				int lowb = i & -1;
+				rearrange[p][mvi][i] = rearrange[p][mvi][lowb] | rearrange[p][mvi][i - lowb];
+			}
+	// *** lesson 34
+	for (int i = 0; i < (1 << 12); ++i)
+		if (rearrange[0][1][i] != rearrange[1][1][i])
+			error("! mismatch in rearrange");
+	// *** lesson 36
+	int ind = 0;
+	for (int e8_4 = 0; e8_4 < C8_4; ++e8_4)
+		for (int epp1 = 0; epp1 < FACT4; ++epp1)
+			for (int epp2 = 0; epp2 < FACT4; epp2 += 2, ++ind)
+			{
+				int mvi = 0;
+				for (int mv = 0; mv < NMOVES; ++mv)
+				{
+					if (!kocsymm::in_Kocieba_group(mv))
+						continue;
+					unpack_edgecoord(pc, e8_4, epp1, epp2);
+					pc.move(mv);
+					eperm_map[ind][mvi] == permcube::c12_8[pc.et] * FACT4 + pc.etp) * FACT4 + pc.ebp) / 2 * 3;
+					++mvi;
+				}
+			}
+	// *** lesson 40
+	#ifdef LEVELCOUNTS
+		for (int i = 1; i < (1 << 12); ++i)
+			bc[i] = 1 + bc[i & (i - 1)];
+	#endif
 	// lesson 47
 	// lesson 50
 	// lesson 84
